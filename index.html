@@ -19,6 +19,27 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-top-tab:hover{color:#94a3b8}
 .yk-top-tab.active{color:#38bdf8;font-weight:700}
 .yk-top-tab.active::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:2.5px;background:#38bdf8;border-radius:2px 2px 0 0}
+
+/* LIVE VIDEO FRAMES */
+.yk-live-section{padding:20px}
+.yk-live-title{font-size:15px;font-weight:700;color:#f8fafc;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.yk-live-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+.yk-live-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.yk-live-card{background:#1e293b;border-radius:14px;overflow:hidden;border:1px solid #334155;position:relative;cursor:pointer;transition:all 0.3s}
+.yk-live-card:hover{border-color:#ef4444;transform:translateY(-3px);box-shadow:0 8px 24px rgba(239,68,68,0.15)}
+.yk-live-thumb{width:100%;aspect-ratio:16/9;background:#0f172a;position:relative;overflow:hidden}
+.yk-live-thumb img{width:100%;height:100%;object-fit:cover;opacity:0.6}
+.yk-live-badge{position:absolute;top:10px;left:10px;background:rgba(239,68,68,0.9);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:5px;z-index:2}
+.yk-live-badge::before{content:'';width:6px;height:6px;background:#fff;border-radius:50%;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.yk-live-overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:1}
+.yk-live-icon{width:40px;height:40px;background:rgba(239,68,68,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#ef4444;border:2px solid rgba(239,68,68,0.4)}
+.yk-live-text{font-size:12px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:1px}
+.yk-live-info{padding:12px}
+.yk-live-name{font-size:13px;font-weight:600;color:#f1f5f9;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yk-live-time{font-size:11px;color:#64748b}
+
 .yk-section-title{padding:20px 20px 12px;font-size:15px;font-weight:700;color:#f8fafc}
 .yk-list{padding:0 20px 20px;display:flex;flex-direction:column;gap:10px}
 .yk-card{background:#1e293b;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;border:1px solid #334155;transition:all 0.25s ease;position:relative;overflow:hidden}
@@ -86,74 +107,224 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-player-time{font-size:11px;color:#64748b;font-weight:500;min-width:80px;text-align:right}
 .yk-player-fullscreen{background:none;border:none;color:#94a3b8;font-size:16px;cursor:pointer;padding:4px}
 .yk-player-fullscreen:hover{color:#38bdf8}
-@media(max-width:768px){.yk-player-box{width:100%;height:100%;border-radius:0;border:none}.yk-player-overlay{padding:0}}
-@media(min-width:900px){.yk-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.yk-videos-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}}
-@media(min-width:1400px){.yk-videos-list{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:600px){.yk-video-thumb{width:90px;height:60px}.yk-video-title{font-size:13px}.yk-name{font-size:14px}}
+
+@media(max-width:768px){
+  .yk-live-grid{grid-template-columns:1fr}
+  .yk-player-box{width:100%;height:100%;border-radius:0;border:none}
+  .yk-player-overlay{padding:0}
+}
+@media(min-width:900px){
+  .yk-list{display:grid;grid-template-columns:1fr;gap:10px}
+  .yk-videos-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+}
+@media(min-width:1400px){
+  .yk-videos-list{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:600px){
+  .yk-video-thumb{width:90px;height:60px}
+  .yk-video-title{font-size:13px}
+  .yk-name{font-size:14px}
+  .yk-live-grid{grid-template-columns:1fr}
+}
 </style>
+<base target="_blank">
 </head>
 <body>
 <div id="yk-app">
+
+<!-- HOME PAGE -->
 <div class="yk-page active" id="page-home">
-<div class="yk-header"><button class="yk-back" style="opacity:0;pointer-events:none;">&lt;</button><div class="yk-title">Yakeen NEET Hindi 2027</div></div>
-<div class="yk-top-tabs">
-<button class="yk-top-tab active" onclick="switchTopTab(this,'classes')">All Classes</button>
-<button class="yk-top-tab" onclick="switchTopTab(this,'khazana')">Khazana</button>
-<button class="yk-top-tab" onclick="switchTopTab(this,'tests')">Tests</button>
-<button class="yk-top-tab" onclick="switchTopTab(this,'announcements')">Announcements</button>
+  <div class="yk-header">
+    <button class="yk-back" style="opacity:0;pointer-events:none;">&lt;</button>
+    <div class="yk-title">Yakeen NEET Hindi 2027</div>
+  </div>
+
+  <div class="yk-top-tabs">
+    <button class="yk-top-tab active" onclick="switchTopTab(this,'classes')">All Classes</button>
+    <button class="yk-top-tab" onclick="switchTopTab(this,'khazana')">Khazana</button>
+    <button class="yk-top-tab" onclick="switchTopTab(this,'tests')">Tests</button>
+    <button class="yk-top-tab" onclick="switchTopTab(this,'announcements')">Announcements</button>
+  </div>
+
+  <!-- LIVE VIDEO FRAMES -->
+  <div class="yk-live-section" id="live-section">
+    <div class="yk-live-title"><div class="yk-live-dot"></div>Live Classes</div>
+    <div class="yk-live-grid">
+      <div class="yk-live-card" onclick="showLiveAlert('Physics Live')">
+        <div class="yk-live-thumb">
+          <img src="https://placehold.co/400x225/1e293b/475569?text=Physics&font=inter" alt="">
+          <div class="yk-live-badge">LIVE</div>
+          <div class="yk-live-overlay">
+            <div class="yk-live-icon">&#9658;</div>
+            <div class="yk-live-text">Coming Soon</div>
+          </div>
+        </div>
+        <div class="yk-live-info">
+          <div class="yk-live-name">Physics Live Class</div>
+          <div class="yk-live-time">Daily at 8:00 AM</div>
+        </div>
+      </div>
+      <div class="yk-live-card" onclick="showLiveAlert('Chemistry Live')">
+        <div class="yk-live-thumb">
+          <img src="https://placehold.co/400x225/1e293b/475569?text=Chemistry&font=inter" alt="">
+          <div class="yk-live-badge">LIVE</div>
+          <div class="yk-live-overlay">
+            <div class="yk-live-icon">&#9658;</div>
+            <div class="yk-live-text">Coming Soon</div>
+          </div>
+        </div>
+        <div class="yk-live-info">
+          <div class="yk-live-name">Chemistry Live Class</div>
+          <div class="yk-live-time">Daily at 10:00 AM</div>
+        </div>
+      </div>
+      <div class="yk-live-card" onclick="showLiveAlert('Biology Live')">
+        <div class="yk-live-thumb">
+          <img src="https://placehold.co/400x225/1e293b/475569?text=Biology&font=inter" alt="">
+          <div class="yk-live-badge">LIVE</div>
+          <div class="yk-live-overlay">
+            <div class="yk-live-icon">&#9658;</div>
+            <div class="yk-live-text">Coming Soon</div>
+          </div>
+        </div>
+        <div class="yk-live-info">
+          <div class="yk-live-name">Biology Live Class</div>
+          <div class="yk-live-time">Daily at 12:00 PM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="yk-section-title">Subjects</div>
+  <div class="yk-list" id="home-subjects">
+    <div class="yk-card" onclick="openSubject('Physics')">
+      <div class="yk-icon physics-icon"><span style="color:#f59e0b">P</span></div>
+      <div class="yk-info">
+        <div class="yk-name">Physics</div>
+        <div class="yk-meta"><span>Click to view chapters</span></div>
+      </div>
+      <div class="yk-card-arrow">&gt;</div>
+    </div>
+    <div class="yk-card" onclick="openSubject('Biology')">
+      <div class="yk-icon biology-icon"><span style="color:#ec4899">B</span></div>
+      <div class="yk-info">
+        <div class="yk-name">Biology</div>
+        <div class="yk-meta"><span>Click to view chapters</span></div>
+      </div>
+      <div class="yk-card-arrow">&gt;</div>
+    </div>
+    <div class="yk-card" onclick="openSubject('Chemistry')">
+      <div class="yk-icon chemistry-icon"><span style="color:#10b981">C</span></div>
+      <div class="yk-info">
+        <div class="yk-name">Chemistry</div>
+        <div class="yk-meta"><span>Click to view chapters</span></div>
+      </div>
+      <div class="yk-card-arrow">&gt;</div>
+    </div>
+  </div>
 </div>
-<div class="yk-section-title">Subjects</div>
-<div class="yk-list" id="home-subjects">
-<div class="yk-card" onclick="openSubject('Physics')"><div class="yk-icon physics-icon"><span>P</span></div><div class="yk-info"><div class="yk-name">Physics</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>
-<div class="yk-card" onclick="openSubject('Chemistry')"><div class="yk-icon chemistry-icon"><span>C</span></div><div class="yk-info"><div class="yk-name">Chemistry</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>
-<div class="yk-card" onclick="openSubject('Biology')"><div class="yk-icon biology-icon"><span>B</span></div><div class="yk-info"><div class="yk-name">Biology</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>
-</div>
-</div>
+
+<!-- SUBJECT PAGE -->
 <div class="yk-page" id="page-subject">
-<div class="yk-header"><button class="yk-back" onclick="goBack()">&lt;</button><div class="yk-title" id="subject-title">Subject</div></div>
-<div class="yk-top-tabs" id="subject-tabs"><button class="yk-top-tab active" onclick="switchSubjectTab(this,'chapters')">Chapters</button></div>
-<div class="yk-list" id="subject-chapters"><div class="yk-loading"><div class="yk-spinner"></div><p>Loading chapters...</p></div></div>
+  <div class="yk-header">
+    <button class="yk-back" onclick="goBack()">&lt;</button>
+    <div class="yk-title" id="subject-title">Subject</div>
+  </div>
+  <div class="yk-top-tabs" id="subject-tabs">
+    <button class="yk-top-tab active" onclick="switchSubjectTab(this,'chapters')">Chapters</button>
+  </div>
+  <div class="yk-list" id="subject-chapters">
+    <div class="yk-loading"><div class="yk-spinner"></div><p>Loading chapters...</p></div>
+  </div>
 </div>
+
+<!-- VIDEOS PAGE -->
 <div class="yk-page" id="page-videos">
-<div class="yk-header"><button class="yk-back" onclick="goBack()">&lt;</button><div class="yk-title" id="chapter-title">Chapter</div></div>
-<div class="yk-video-tabs" id="video-tabs">
-<button class="yk-video-tab active" onclick="switchVideoTab(this,'lectures')">Lectures</button>
-<button class="yk-video-tab" onclick="switchVideoTab(this,'notes')">Notes</button>
-<button class="yk-video-tab" onclick="switchVideoTab(this,'dpp')">DPP</button>
+  <div class="yk-header">
+    <button class="yk-back" onclick="goBack()">&lt;</button>
+    <div class="yk-title" id="chapter-title">Chapter</div>
+  </div>
+  <div class="yk-video-tabs" id="video-tabs">
+    <button class="yk-video-tab active" onclick="switchVideoTab(this,'lectures')">Lectures</button>
+    <button class="yk-video-tab" onclick="switchVideoTab(this,'notes')">Notes</button>
+    <button class="yk-video-tab" onclick="switchVideoTab(this,'dpp')">DPP</button>
+  </div>
+  <div class="yk-videos-list" id="videos-list">
+    <div class="yk-loading"><div class="yk-spinner"></div><p>Loading content...</p></div>
+  </div>
 </div>
-<div class="yk-videos-list" id="videos-list"><div class="yk-loading"><div class="yk-spinner"></div><p>Loading content...</p></div></div>
-</div>
+
+<!-- INLINE VIDEO PLAYER -->
 <div class="yk-player-overlay" id="video-player">
-<div class="yk-player-box">
-<div class="yk-player-header"><div class="yk-player-title" id="player-title">Video Title</div><button class="yk-player-close" onclick="closePlayer()">&#10005;</button></div>
-<div class="yk-player-video"><video id="player-video" controls preload="metadata"><source src="" type="video/mp4"></video></div>
-<div class="yk-player-controls"><button class="yk-player-btn" onclick="togglePlay()" id="play-btn">&#9658;</button><div class="yk-player-progress" onclick="seekVideo(event)"><div class="yk-player-progress-fill" id="progress-fill"></div></div><span class="yk-player-time" id="player-time">0:00 / 0:00</span><button class="yk-player-fullscreen" onclick="toggleFullscreen()">&#9974;</button></div>
+  <div class="yk-player-box">
+    <div class="yk-player-header">
+      <div class="yk-player-title" id="player-title">Video Title</div>
+      <button class="yk-player-close" onclick="closePlayer()">&#10005;</button>
+    </div>
+    <div class="yk-player-video">
+      <video id="player-video" controls preload="metadata">
+        <source src="" type="video/mp4">
+      </video>
+    </div>
+    <div class="yk-player-controls">
+      <button class="yk-player-btn" onclick="togglePlay()" id="play-btn">&#9658;</button>
+      <div class="yk-player-progress" onclick="seekVideo(event)">
+        <div class="yk-player-progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="yk-player-time" id="player-time">0:00 / 0:00</span>
+      <button class="yk-player-fullscreen" onclick="toggleFullscreen()">&#9974;</button>
+    </div>
+  </div>
 </div>
+
 </div>
-</div>
+
 <script>
 const FIREBASE="https://sandeep-a3120-default-rtdb.firebaseio.com";
 var allData=null,currentSubject='',currentChapter='',historyStack=[],currentVideoUrl='';
+
 function organizeData(rawData){var organized={};for(var key in rawData){var folderData=rawData[key];if(!folderData)continue;var folderLower=key.toLowerCase().trim(),contentType='',chapterName='';if(folderLower.endsWith(' video')){contentType='video';chapterName=key.substring(0,key.length-6).trim()}else if(folderLower.endsWith(' videos')){contentType='video';chapterName=key.substring(0,key.length-7).trim()}else if(folderLower.endsWith(' notes')){contentType='notes';chapterName=key.substring(0,key.length-6).trim()}else if(folderLower.endsWith(' note')){contentType='notes';chapterName=key.substring(0,key.length-5).trim()}else if(folderLower.endsWith(' dpp')){contentType='dpp';chapterName=key.substring(0,key.length-4).trim()}else if(folderLower.endsWith(' dpps')){contentType='dpp';chapterName=key.substring(0,key.length-5).trim()}else{chapterName=key;contentType='video'}var values=Object.values(folderData),firstItem=values.length>0?values[0]:null,subject=(firstItem&&firstItem.subject)?firstItem.subject:'Biology',mappedSubject=subject;if(subject==='Botany'||subject==='Zoology')mappedSubject='Biology';if(!organized[mappedSubject])organized[mappedSubject]={chapters:{}};if(!organized[mappedSubject].chapters[chapterName]){organized[mappedSubject].chapters[chapterName]={videos:[],notes:[],dpp:[],videoCount:0,notesCount:0,dppCount:0}}for(var itemKey in folderData){var item=folderData[itemKey];if(!item)continue;if(contentType==='video'){organized[mappedSubject].chapters[chapterName].videos.push(item);organized[mappedSubject].chapters[chapterName].videoCount++}else if(contentType==='notes'){organized[mappedSubject].chapters[chapterName].notes.push(item);organized[mappedSubject].chapters[chapterName].notesCount++}else if(contentType==='dpp'){organized[mappedSubject].chapters[chapterName].dpp.push(item);organized[mappedSubject].chapters[chapterName].dppCount++}}}return organized}
+
 function loadFirebaseData(){return fetch(FIREBASE+"/.json").then(function(res){return res.json()}).then(function(raw){allData=organizeData(raw);return true}).catch(function(e){console.error("Firebase error:",e);return false})}
+
 function showPage(pageId){var pages=document.querySelectorAll('.yk-page');for(var i=0;i<pages.length;i++)pages[i].classList.remove('active');document.getElementById('page-'+pageId).classList.add('active');window.scrollTo(0,0)}
+
 function goBack(){if(historyStack.length>0){var prev=historyStack.pop();currentSubject=prev.subject||'';currentChapter=prev.chapter||'';if(prev.page==='home'){showPage('home')}else if(prev.page==='subject'){openSubject(currentSubject)}}else{currentSubject='';currentChapter='';showPage('home')}}
+
 function openSubject(subject){historyStack.push({page:'home',subject:currentSubject,chapter:currentChapter});currentSubject=subject;currentChapter='';document.getElementById('subject-title').textContent=subject;document.getElementById('subject-chapters').innerHTML='<div class="yk-loading"><div class="yk-spinner"></div><p>Loading chapters...</p></div>';showPage('subject');if(!allData){loadFirebaseData().then(function(success){if(!success){document.getElementById('subject-chapters').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>';return}renderSubjectChapters(subject,'chapters')})}else{renderSubjectChapters(subject,'chapters')}}
+
 function renderSubjectChapters(subject,filter){if(!allData||!allData[subject]){document.getElementById('subject-chapters').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No chapters available for '+subject+' yet</div></div>';return}var chapters=allData[subject].chapters,html='',idx=1;for(var chName in chapters){var ch=chapters[chName],show=false;if(filter==='chapters')show=true;else if(filter==='notes'&&ch.notesCount>0)show=true;else if(filter==='dpp'&&ch.dppCount>0)show=true;if(!show)continue;var meta=[];if(ch.videoCount>0)meta.push(ch.videoCount+' Videos');if(ch.notesCount>0)meta.push(ch.notesCount+' Notes');if(ch.dppCount>0)meta.push(ch.dppCount+' DPP');var safeName=chName.replace(/'/g,"\'");html+='<div class="yk-card" onclick="openChapter(''+safeName+'')"><div class="yk-ch-num">'+idx+'</div><div class="yk-info"><div class="yk-name">'+chName+'</div><div class="yk-meta">'+meta.join(' | ')+'</div></div><div class="yk-card-arrow">&gt;</div></div>';idx++}document.getElementById('subject-chapters').innerHTML=html||'<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No chapters found</div></div>'}
+
 function openChapter(chapterName){historyStack.push({page:'subject',subject:currentSubject,chapter:currentChapter});currentChapter=chapterName;document.getElementById('chapter-title').textContent=chapterName;document.getElementById('videos-list').innerHTML='<div class="yk-loading"><div class="yk-spinner"></div><p>Loading content...</p></div>';showPage('videos');if(!allData){loadFirebaseData().then(function(success){if(!success){document.getElementById('videos-list').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>';return}renderVideos('lectures')})}else{renderVideos('lectures')}}
+
 function renderVideos(tab){if(!currentSubject||!currentChapter)return;if(!allData||!allData[currentSubject]||!allData[currentSubject].chapters[currentChapter]){document.getElementById('videos-list').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No content found</div></div>';return}var chapter=allData[currentSubject].chapters[currentChapter],html='',count=0;if(tab==='lectures'){var videos=chapter.videos;for(var i=0;i<videos.length;i++){var item=videos[i];count++;var date=item.date||'',url=item.url||'#';var safeUrl=url.replace(/'/g,"\'"),safeTitle=cleanTitle(item.title).replace(/'/g,"\'");html+='<div class="yk-video-card" onclick="openPlayer(''+safeUrl+'',''+safeTitle+'')"><div class="yk-video-row"><div class="yk-video-thumb"><img src="https://placehold.co/200x140/0f172a/38bdf8?text=L'+(i+1)+'&font=inter" alt=""><div class="play-icon"></div></div><div class="yk-video-info"><div class="yk-video-title">'+cleanTitle(item.title)+'</div><div class="yk-video-meta"><span class="date">'+date+'</span></div></div><div class="yk-video-arrow">&gt;</div></div></div>'}}else if(tab==='notes'){var notes=chapter.notes;for(var i=0;i<notes.length;i++){var item=notes[i];count++;var date=item.date||'';html+='<div class="yk-doc-card" onclick="window.open(''+item.url+'','_blank')"><div class="yk-doc-icon" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3)">N</div><div class="yk-doc-info"><div class="yk-doc-title">'+cleanTitle(item.title)+'</div><div class="yk-doc-meta"><span class="yk-badge notes">Notes</span><span>'+date+'</span></div></div><div class="yk-doc-arrow">&gt;</div></div>'}}else if(tab==='dpp'){var dpps=chapter.dpp;for(var i=0;i<dpps.length;i++){var item=dpps[i];count++;var date=item.date||'';html+='<div class="yk-doc-card" onclick="window.open(''+item.url+'','_blank')"><div class="yk-doc-icon" style="background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3)">D</div><div class="yk-doc-info"><div class="yk-doc-title">'+cleanTitle(item.title)+'</div><div class="yk-doc-meta"><span class="yk-badge dpp">DPP</span><span>'+date+'</span></div></div><div class="yk-doc-arrow">&gt;</div></div>'}}if(count===0){html='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No '+tab+' available for this chapter</div></div>'}document.getElementById('videos-list').innerHTML=html}
+
+function showLiveAlert(name){alert(name+' - Coming Soon! Live classes will start soon.')}
+
 function openPlayer(url,title){if(!url||url==='#')return;currentVideoUrl=url;var video=document.getElementById('player-video'),source=video.querySelector('source');source.src=url;video.load();document.getElementById('player-title').textContent=title||'Video';document.getElementById('video-player').classList.add('active');video.play().catch(function(e){console.log('Auto-play blocked:',e)});updatePlayButton();video.ontimeupdate=function(){updateProgress()};video.onended=function(){document.getElementById('play-btn').innerHTML='&#9658;'}}
+
 function closePlayer(){var video=document.getElementById('player-video');video.pause();video.currentTime=0;document.getElementById('video-player').classList.remove('active');if(document.fullscreenElement){document.exitFullscreen()}}
+
 function togglePlay(){var video=document.getElementById('player-video');if(video.paused){video.play()}else{video.pause()}updatePlayButton()}
+
 function updatePlayButton(){var video=document.getElementById('player-video'),btn=document.getElementById('play-btn');if(video.paused){btn.innerHTML='&#9658;'}else{btn.innerHTML='&#10074;&#10074;'}}
+
 function updateProgress(){var video=document.getElementById('player-video'),progress=(video.currentTime/video.duration)*100;document.getElementById('progress-fill').style.width=progress+'%';var current=formatTime(video.currentTime),total=formatTime(video.duration||0);document.getElementById('player-time').textContent=current+' / '+total}
+
 function seekVideo(event){var video=document.getElementById('player-video'),progressBar=event.currentTarget,rect=progressBar.getBoundingClientRect(),clickX=event.clientX-rect.left,percent=clickX/rect.width;video.currentTime=percent*video.duration}
+
 function formatTime(seconds){if(isNaN(seconds))return'0:00';var mins=Math.floor(seconds/60),secs=Math.floor(seconds%60);return mins+':'+(secs<10?'0':'')+secs}
+
 function toggleFullscreen(){var video=document.getElementById('player-video');if(!document.fullscreenElement){video.requestFullscreen().catch(function(e){console.log('Fullscreen error:',e)})}else{document.exitFullscreen()}}
+
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closePlayer()}});
+
 function cleanTitle(title){if(!title)return'Untitled';return title.replace(/Name:\s*/gi,'').replace(/ZX/gi,'').replace(/NO DPP/gi,'').replace(/Recorded/gi,'').replace(/Class Notes and Download Option will be Provided Soon/gi,'').replace(/\.mkv/gi,'').replace(/\.mp4/gi,'').replace(/\.pdf/gi,'').replace(/\s+/g,' ').trim()}
-function switchTopTab(el,tab){var tabs=document.querySelectorAll('#page-home .yk-top-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');if(tab!=='classes'){document.getElementById('home-subjects').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No '+tab+' available yet</div></div>'}else{document.getElementById('home-subjects').innerHTML='<div class="yk-card" onclick="openSubject('Physics')"><div class="yk-icon physics-icon"><span>P</span></div><div class="yk-info"><div class="yk-name">Physics</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" onclick="openSubject('Chemistry')"><div class="yk-icon chemistry-icon"><span>C</span></div><div class="yk-info"><div class="yk-name">Chemistry</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" onclick="openSubject('Biology')"><div class="yk-icon biology-icon"><span>B</span></div><div class="yk-info"><div class="yk-name">Biology</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>'}}
+
+function switchTopTab(el,tab){var tabs=document.querySelectorAll('#page-home .yk-top-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');if(tab!=='classes'){document.getElementById('home-subjects').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No '+tab+' available yet</div></div>';document.getElementById('live-section').style.display='none'}else{document.getElementById('home-subjects').innerHTML='<div class="yk-card" onclick="openSubject('Physics')"><div class="yk-icon physics-icon"><span style="color:#f59e0b">P</span></div><div class="yk-info"><div class="yk-name">Physics</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" onclick="openSubject('Biology')"><div class="yk-icon biology-icon"><span style="color:#ec4899">B</span></div><div class="yk-info"><div class="yk-name">Biology</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" onclick="openSubject('Chemistry')"><div class="yk-icon chemistry-icon"><span style="color:#10b981">C</span></div><div class="yk-info"><div class="yk-name">Chemistry</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>';document.getElementById('live-section').style.display='block'}}
+
 function switchSubjectTab(el,tab){var tabs=document.querySelectorAll('#page-subject .yk-top-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');renderSubjectChapters(currentSubject,tab)}
+
 function switchVideoTab(el,tab){var tabs=document.querySelectorAll('.yk-video-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');renderVideos(tab)}
 </script>
 </body>
