@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yakeen NEET Hindi 2027</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh;width:100%;overflow-x:hidden}
+#yk-app{width:100%;min-height:100vh;background:#0a0e1a}
+.yk-header{background:#0f172a;padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:100}
+.yk-back{width:36px;height:36px;background:#1e293b;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:20px;cursor:pointer;border:none}
+.yk-back:hover{background:#334155;color:#fff}
+.yk-title{font-size:17px;font-weight:700;color:#f8fafc;flex:1}
+.yk-top-tabs{display:flex;background:#0f172a;border-bottom:1px solid #1e293b;overflow-x:auto;scrollbar-width:none}
+.yk-top-tabs::-webkit-scrollbar{display:none}
+.yk-top-tab{flex:1;min-width:100px;padding:14px 16px;background:none;border:none;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;position:relative;transition:all 0.2s;white-space:nowrap;text-align:center}
+.yk-top-tab:hover{color:#94a3b8}
+.yk-top-tab.active{color:#38bdf8;font-weight:700}
+.yk-top-tab.active::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:2.5px;background:#38bdf8;border-radius:2px 2px 0 0}
+.yk-section-title{padding:20px 20px 12px;font-size:15px;font-weight:700;color:#f8fafc}
+.yk-list{padding:0 20px 20px;display:flex;flex-direction:column;gap:10px}
+.yk-card{background:#1e293b;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;border:1px solid #334155;transition:all 0.25s ease;position:relative;overflow:hidden}
+.yk-card:hover{background:#252f47;border-color:#475569;transform:translateX(4px)}
+.yk-card-arrow{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:#64748b;font-size:22px;font-weight:300}
+.yk-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:#0f172a;border:1px solid #334155}
+.yk-info{flex:1;min-width:0;padding-right:30px}
+.yk-name{font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yk-meta{font-size:12px;color:#64748b;font-weight:500;display:flex;gap:10px;flex-wrap:wrap}
+.physics-icon{border-color:#f59e0b}.chemistry-icon{border-color:#10b981}.biology-icon{border-color:#ec4899}
+.yk-ch-num{width:44px;height:44px;border-radius:12px;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#38bdf8;flex-shrink:0}
+.yk-video-tabs{display:flex;background:#0f172a;border-bottom:1px solid #1e293b;overflow-x:auto;scrollbar-width:none;position:sticky;top:64px;z-index:99}
+.yk-video-tabs::-webkit-scrollbar{display:none}
+.yk-video-tab{flex:1;min-width:80px;padding:12px 14px;background:none;border:none;color:#64748b;font-size:12px;font-weight:600;cursor:pointer;position:relative;transition:all 0.2s;white-space:nowrap;text-align:center}
+.yk-video-tab:hover{color:#94a3b8}
+.yk-video-tab.active{color:#38bdf8;font-weight:700}
+.yk-video-tab.active::after{content:'';position:absolute;bottom:0;left:10px;right:10px;height:2.5px;background:#38bdf8;border-radius:2px 2px 0 0}
+.yk-videos-list{padding:16px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.yk-video-card{background:#1e293b;border-radius:16px;overflow:hidden;border:1px solid #334155;transition:all 0.25s ease;cursor:pointer}
+.yk-video-card:hover{border-color:#475569;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.yk-video-row{display:flex;align-items:center;gap:14px;padding:14px 16px}
+.yk-video-thumb{width:120px;height:80px;border-radius:10px;background:#0f172a;flex-shrink:0;overflow:hidden;position:relative;border:1px solid #334155}
+.yk-video-thumb img{width:100%;height:100%;object-fit:cover}
+.yk-video-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;background:rgba(56,189,248,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.yk-video-thumb .play-icon::after{content:'';width:0;height:0;border-left:10px solid #fff;border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:2px}
+.yk-video-info{flex:1;min-width:0}
+.yk-video-title{font-size:14px;font-weight:700;color:#f1f5f9;line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.yk-video-meta{font-size:11px;color:#64748b;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.yk-video-arrow{width:32px;height:32px;border-radius:50%;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:14px;flex-shrink:0;transition:all 0.2s}
+.yk-video-card:hover .yk-video-arrow{background:#38bdf8;border-color:#38bdf8;color:#fff}
+.yk-doc-card{background:#1e293b;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;border:1px solid #334155;transition:all 0.25s ease;position:relative}
+.yk-doc-card:hover{background:#252f47;border-color:#475569;transform:translateX(4px)}
+.yk-doc-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:#0f172a;border:1px solid #334155}
+.yk-doc-info{flex:1;min-width:0}
+.yk-doc-title{font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yk-doc-meta{font-size:11px;color:#64748b;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.yk-doc-arrow{width:32px;height:32px;border-radius:50%;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:14px;flex-shrink:0;transition:all 0.2s}
+.yk-doc-card:hover .yk-doc-arrow{background:#38bdf8;border-color:#38bdf8;color:#fff}
+.yk-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.yk-badge.notes{background:rgba(245,158,11,0.15);color:#f59e0b}
+.yk-badge.dpp{background:rgba(168,85,247,0.15);color:#a855f7}
+.yk-empty{text-align:center;padding:60px 20px;color:#475569}
+.yk-empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5}
+.yk-empty-text{font-size:15px;font-weight:600}
+.yk-loading{text-align:center;padding:40px}
+.yk-spinner{width:36px;height:36px;border:3px solid rgba(56,189,248,0.1);border-top-color:#38bdf8;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.yk-page{display:none;animation:fadeIn 0.3s ease}
+.yk-page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.yk-player-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column}
+.yk-player-overlay.active{display:flex}
+.yk-player-box{width:95%;max-width:1100px;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #334155}
+.yk-player-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1e293b;border-bottom:1px solid #334155}
+.yk-player-title{font-size:14px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
+.yk-player-close{width:32px;height:32px;border-radius:8px;background:#334155;border:none;color:#e2e8f0;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.yk-player-close:hover{background:#475569}
+.yk-player-video{width:100%;aspect-ratio:16/9;background:#000}
+.yk-player-video video{width:100%;height:100%;object-fit:contain}
+.yk-player-controls{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#1e293b}
+.yk-player-btn{background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:4px}
+.yk-player-btn:hover{color:#38bdf8}
+.yk-player-progress{flex:1;height:4px;background:#334155;border-radius:2px;cursor:pointer;position:relative}
+.yk-player-progress-fill{height:100%;background:#38bdf8;border-radius:2px;width:0%;transition:width 0.1s}
+.yk-player-time{font-size:11px;color:#64748b;font-weight:500;min-width:80px;text-align:right}
+.yk-player-fullscreen{background:none;border:none;color:#94a3b8;font-size:16px;cursor:pointer;padding:4px}
+.yk-player-fullscreen:hover{color:#38bdf8}
+@media(max-width:768px){.yk-player-box{width:100%;height:100%;border-radius:0;border:none}.yk-player-overlay{padding:0}}
+@media(min-width:900px){.yk-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.yk-videos-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}}
+@media(min-width:1400px){.yk-videos-list{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.yk-video-thumb{width:90px;height:60px}.yk-video-title{font-size:13px}.yk-name{font-size:14px}}
+</style>
+</head>
+<body>
+<div id="yk-app">
+<div class="yk-page active" id="page-home">
+<div class="yk-header"><button class="yk-back" style="opacity:0;pointer-events:none;">&lt;</button><div class="yk-title">Yakeen NEET Hindi 2027</div></div>
+<div class="yk-top-tabs">
+<button class="yk-top-tab active" onclick="switchTopTab(this,'classes')">All Classes</button>
+<button class="yk-top-tab" onclick="switchTopTab(this,'khazana')">Khazana</button>
+<button class="yk-top-tab" onclick="switchTopTab(this,'tests')">Tests</button>
+<button class="yk-top-tab" onclick="switchTopTab(this,'announcements')">Announcements</button>
+</div>
+<div class="yk-section-title">Subjects</div>
+<div class="yk-list" id="home-subjects">
+<div class="yk-card" onclick="openSubject('Physics')"><div class="yk-icon physics-icon"><span>P</span></div><div class="yk-info"><div class="yk-name">Physics</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>
+<div class="yk-card" onclick="openSubject('Chemistry')"><div class="yk-icon chemistry-icon"><span>C</span></div><div class="yk-info"><div class="yk-name">Chemistry</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>
+<div class="yk-card" onclick="openSubject('Biology')"><div class="yk-icon biology-icon"><span>B</span></div><div class="yk-info"><div class="yk-name">Biology</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>
+</div>
+</div>
+<div class="yk-page" id="page-subject">
+<div class="yk-header"><button class="yk-back" onclick="goBack()">&lt;</button><div class="yk-title" id="subject-title">Subject</div></div>
+<div class="yk-top-tabs" id="subject-tabs"><button class="yk-top-tab active" onclick="switchSubjectTab(this,'chapters')">Chapters</button></div>
+<div class="yk-list" id="subject-chapters"><div class="yk-loading"><div class="yk-spinner"></div><p>Loading chapters...</p></div></div>
+</div>
+<div class="yk-page" id="page-videos">
+<div class="yk-header"><button class="yk-back" onclick="goBack()">&lt;</button><div class="yk-title" id="chapter-title">Chapter</div></div>
+<div class="yk-video-tabs" id="video-tabs">
+<button class="yk-video-tab active" onclick="switchVideoTab(this,'lectures')">Lectures</button>
+<button class="yk-video-tab" onclick="switchVideoTab(this,'notes')">Notes</button>
+<button class="yk-video-tab" onclick="switchVideoTab(this,'dpp')">DPP</button>
+</div>
+<div class="yk-videos-list" id="videos-list"><div class="yk-loading"><div class="yk-spinner"></div><p>Loading content...</p></div></div>
+</div>
+<div class="yk-player-overlay" id="video-player">
+<div class="yk-player-box">
+<div class="yk-player-header"><div class="yk-player-title" id="player-title">Video Title</div><button class="yk-player-close" onclick="closePlayer()">&#10005;</button></div>
+<div class="yk-player-video"><video id="player-video" controls preload="metadata"><source src="" type="video/mp4"></video></div>
+<div class="yk-player-controls"><button class="yk-player-btn" onclick="togglePlay()" id="play-btn">&#9658;</button><div class="yk-player-progress" onclick="seekVideo(event)"><div class="yk-player-progress-fill" id="progress-fill"></div></div><span class="yk-player-time" id="player-time">0:00 / 0:00</span><button class="yk-player-fullscreen" onclick="toggleFullscreen()">&#9974;</button></div>
+</div>
+</div>
+</div>
+<script>
+const FIREBASE="https://sandeep-a3120-default-rtdb.firebaseio.com";
+var allData=null,currentSubject='',currentChapter='',historyStack=[],currentVideoUrl='';
+function organizeData(rawData){var organized={};for(var key in rawData){var folderData=rawData[key];if(!folderData)continue;var folderLower=key.toLowerCase().trim(),contentType='',chapterName='';if(folderLower.endsWith(' video')){contentType='video';chapterName=key.substring(0,key.length-6).trim()}else if(folderLower.endsWith(' videos')){contentType='video';chapterName=key.substring(0,key.length-7).trim()}else if(folderLower.endsWith(' notes')){contentType='notes';chapterName=key.substring(0,key.length-6).trim()}else if(folderLower.endsWith(' note')){contentType='notes';chapterName=key.substring(0,key.length-5).trim()}else if(folderLower.endsWith(' dpp')){contentType='dpp';chapterName=key.substring(0,key.length-4).trim()}else if(folderLower.endsWith(' dpps')){contentType='dpp';chapterName=key.substring(0,key.length-5).trim()}else{chapterName=key;contentType='video'}var values=Object.values(folderData),firstItem=values.length>0?values[0]:null,subject=(firstItem&&firstItem.subject)?firstItem.subject:'Biology',mappedSubject=subject;if(subject==='Botany'||subject==='Zoology')mappedSubject='Biology';if(!organized[mappedSubject])organized[mappedSubject]={chapters:{}};if(!organized[mappedSubject].chapters[chapterName]){organized[mappedSubject].chapters[chapterName]={videos:[],notes:[],dpp:[],videoCount:0,notesCount:0,dppCount:0}}for(var itemKey in folderData){var item=folderData[itemKey];if(!item)continue;if(contentType==='video'){organized[mappedSubject].chapters[chapterName].videos.push(item);organized[mappedSubject].chapters[chapterName].videoCount++}else if(contentType==='notes'){organized[mappedSubject].chapters[chapterName].notes.push(item);organized[mappedSubject].chapters[chapterName].notesCount++}else if(contentType==='dpp'){organized[mappedSubject].chapters[chapterName].dpp.push(item);organized[mappedSubject].chapters[chapterName].dppCount++}}}return organized}
+function loadFirebaseData(){return fetch(FIREBASE+"/.json").then(function(res){return res.json()}).then(function(raw){allData=organizeData(raw);return true}).catch(function(e){console.error("Firebase error:",e);return false})}
+function showPage(pageId){var pages=document.querySelectorAll('.yk-page');for(var i=0;i<pages.length;i++)pages[i].classList.remove('active');document.getElementById('page-'+pageId).classList.add('active');window.scrollTo(0,0)}
+function goBack(){if(historyStack.length>0){var prev=historyStack.pop();currentSubject=prev.subject||'';currentChapter=prev.chapter||'';if(prev.page==='home'){showPage('home')}else if(prev.page==='subject'){openSubject(currentSubject)}}else{currentSubject='';currentChapter='';showPage('home')}}
+function openSubject(subject){historyStack.push({page:'home',subject:currentSubject,chapter:currentChapter});currentSubject=subject;currentChapter='';document.getElementById('subject-title').textContent=subject;document.getElementById('subject-chapters').innerHTML='<div class="yk-loading"><div class="yk-spinner"></div><p>Loading chapters...</p></div>';showPage('subject');if(!allData){loadFirebaseData().then(function(success){if(!success){document.getElementById('subject-chapters').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>';return}renderSubjectChapters(subject,'chapters')})}else{renderSubjectChapters(subject,'chapters')}}
+function renderSubjectChapters(subject,filter){if(!allData||!allData[subject]){document.getElementById('subject-chapters').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No chapters available for '+subject+' yet</div></div>';return}var chapters=allData[subject].chapters,html='',idx=1;for(var chName in chapters){var ch=chapters[chName],show=false;if(filter==='chapters')show=true;else if(filter==='notes'&&ch.notesCount>0)show=true;else if(filter==='dpp'&&ch.dppCount>0)show=true;if(!show)continue;var meta=[];if(ch.videoCount>0)meta.push(ch.videoCount+' Videos');if(ch.notesCount>0)meta.push(ch.notesCount+' Notes');if(ch.dppCount>0)meta.push(ch.dppCount+' DPP');var safeName=chName.replace(/'/g,"\'");html+='<div class="yk-card" onclick="openChapter(''+safeName+'')"><div class="yk-ch-num">'+idx+'</div><div class="yk-info"><div class="yk-name">'+chName+'</div><div class="yk-meta">'+meta.join(' | ')+'</div></div><div class="yk-card-arrow">&gt;</div></div>';idx++}document.getElementById('subject-chapters').innerHTML=html||'<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No chapters found</div></div>'}
+function openChapter(chapterName){historyStack.push({page:'subject',subject:currentSubject,chapter:currentChapter});currentChapter=chapterName;document.getElementById('chapter-title').textContent=chapterName;document.getElementById('videos-list').innerHTML='<div class="yk-loading"><div class="yk-spinner"></div><p>Loading content...</p></div>';showPage('videos');if(!allData){loadFirebaseData().then(function(success){if(!success){document.getElementById('videos-list').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>';return}renderVideos('lectures')})}else{renderVideos('lectures')}}
+function renderVideos(tab){if(!currentSubject||!currentChapter)return;if(!allData||!allData[currentSubject]||!allData[currentSubject].chapters[currentChapter]){document.getElementById('videos-list').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No content found</div></div>';return}var chapter=allData[currentSubject].chapters[currentChapter],html='',count=0;if(tab==='lectures'){var videos=chapter.videos;for(var i=0;i<videos.length;i++){var item=videos[i];count++;var date=item.date||'',url=item.url||'#';var safeUrl=url.replace(/'/g,"\'"),safeTitle=cleanTitle(item.title).replace(/'/g,"\'");html+='<div class="yk-video-card" onclick="openPlayer(''+safeUrl+'',''+safeTitle+'')"><div class="yk-video-row"><div class="yk-video-thumb"><img src="https://placehold.co/200x140/0f172a/38bdf8?text=L'+(i+1)+'&font=inter" alt=""><div class="play-icon"></div></div><div class="yk-video-info"><div class="yk-video-title">'+cleanTitle(item.title)+'</div><div class="yk-video-meta"><span class="date">'+date+'</span></div></div><div class="yk-video-arrow">&gt;</div></div></div>'}}else if(tab==='notes'){var notes=chapter.notes;for(var i=0;i<notes.length;i++){var item=notes[i];count++;var date=item.date||'';html+='<div class="yk-doc-card" onclick="window.open(''+item.url+'','_blank')"><div class="yk-doc-icon" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3)">N</div><div class="yk-doc-info"><div class="yk-doc-title">'+cleanTitle(item.title)+'</div><div class="yk-doc-meta"><span class="yk-badge notes">Notes</span><span>'+date+'</span></div></div><div class="yk-doc-arrow">&gt;</div></div>'}}else if(tab==='dpp'){var dpps=chapter.dpp;for(var i=0;i<dpps.length;i++){var item=dpps[i];count++;var date=item.date||'';html+='<div class="yk-doc-card" onclick="window.open(''+item.url+'','_blank')"><div class="yk-doc-icon" style="background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3)">D</div><div class="yk-doc-info"><div class="yk-doc-title">'+cleanTitle(item.title)+'</div><div class="yk-doc-meta"><span class="yk-badge dpp">DPP</span><span>'+date+'</span></div></div><div class="yk-doc-arrow">&gt;</div></div>'}}if(count===0){html='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No '+tab+' available for this chapter</div></div>'}document.getElementById('videos-list').innerHTML=html}
+function openPlayer(url,title){if(!url||url==='#')return;currentVideoUrl=url;var video=document.getElementById('player-video'),source=video.querySelector('source');source.src=url;video.load();document.getElementById('player-title').textContent=title||'Video';document.getElementById('video-player').classList.add('active');video.play().catch(function(e){console.log('Auto-play blocked:',e)});updatePlayButton();video.ontimeupdate=function(){updateProgress()};video.onended=function(){document.getElementById('play-btn').innerHTML='&#9658;'}}
+function closePlayer(){var video=document.getElementById('player-video');video.pause();video.currentTime=0;document.getElementById('video-player').classList.remove('active');if(document.fullscreenElement){document.exitFullscreen()}}
+function togglePlay(){var video=document.getElementById('player-video');if(video.paused){video.play()}else{video.pause()}updatePlayButton()}
+function updatePlayButton(){var video=document.getElementById('player-video'),btn=document.getElementById('play-btn');if(video.paused){btn.innerHTML='&#9658;'}else{btn.innerHTML='&#10074;&#10074;'}}
+function updateProgress(){var video=document.getElementById('player-video'),progress=(video.currentTime/video.duration)*100;document.getElementById('progress-fill').style.width=progress+'%';var current=formatTime(video.currentTime),total=formatTime(video.duration||0);document.getElementById('player-time').textContent=current+' / '+total}
+function seekVideo(event){var video=document.getElementById('player-video'),progressBar=event.currentTarget,rect=progressBar.getBoundingClientRect(),clickX=event.clientX-rect.left,percent=clickX/rect.width;video.currentTime=percent*video.duration}
+function formatTime(seconds){if(isNaN(seconds))return'0:00';var mins=Math.floor(seconds/60),secs=Math.floor(seconds%60);return mins+':'+(secs<10?'0':'')+secs}
+function toggleFullscreen(){var video=document.getElementById('player-video');if(!document.fullscreenElement){video.requestFullscreen().catch(function(e){console.log('Fullscreen error:',e)})}else{document.exitFullscreen()}}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closePlayer()}});
+function cleanTitle(title){if(!title)return'Untitled';return title.replace(/Name:\s*/gi,'').replace(/ZX/gi,'').replace(/NO DPP/gi,'').replace(/Recorded/gi,'').replace(/Class Notes and Download Option will be Provided Soon/gi,'').replace(/\.mkv/gi,'').replace(/\.mp4/gi,'').replace(/\.pdf/gi,'').replace(/\s+/g,' ').trim()}
+function switchTopTab(el,tab){var tabs=document.querySelectorAll('#page-home .yk-top-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');if(tab!=='classes'){document.getElementById('home-subjects').innerHTML='<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No '+tab+' available yet</div></div>'}else{document.getElementById('home-subjects').innerHTML='<div class="yk-card" onclick="openSubject('Physics')"><div class="yk-icon physics-icon"><span>P</span></div><div class="yk-info"><div class="yk-name">Physics</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" onclick="openSubject('Chemistry')"><div class="yk-icon chemistry-icon"><span>C</span></div><div class="yk-info"><div class="yk-name">Chemistry</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" onclick="openSubject('Biology')"><div class="yk-icon biology-icon"><span>B</span></div><div class="yk-info"><div class="yk-name">Biology</div><div class="yk-meta"><span>Click to view chapters</span></div></div><div class="yk-card-arrow">&gt;</div></div>'}}
+function switchSubjectTab(el,tab){var tabs=document.querySelectorAll('#page-subject .yk-top-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');renderSubjectChapters(currentSubject,tab)}
+function switchVideoTab(el,tab){var tabs=document.querySelectorAll('.yk-video-tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');el.classList.add('active');renderVideos(tab)}
+</script>
+</body>
+</html>
