@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yakeen NEET Hindi 2027</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<title>Yakeen NEET 2.o 2027 - Live Users</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh;width:100%;overflow-x:hidden}
@@ -12,6 +12,11 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-header{background:#0f172a;padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:100}
 .yk-back{width:36px;height:36px;background:#1e293b;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:20px;cursor:pointer;border:none}
 .yk-title{font-size:17px;font-weight:700;color:#f8fafc;flex:1}
+.yk-live-users{display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);padding:6px 14px;border-radius:20px}
+.yk-live-users-dot{width:8px;height:8px;background:#10b981;border-radius:50%;animation:pulse 1.5s infinite}
+.yk-live-users-count{font-size:13px;font-weight:700;color:#10b981}
+.yk-live-users-label{font-size:11px;color:#64748b}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
 .yk-top-tabs{display:flex;background:#0f172a;border-bottom:1px solid #1e293b;overflow-x:auto}
 .yk-top-tabs::-webkit-scrollbar{display:none}
 .yk-top-tab{flex:1;min-width:100px;padding:14px 16px;background:none;border:none;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;position:relative;white-space:nowrap;text-align:center}
@@ -20,7 +25,6 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-live-section{padding:20px}
 .yk-live-title{font-size:15px;font-weight:700;color:#f8fafc;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .yk-live-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;animation:pulse 1.5s infinite}
-@keyframes pulse{0%{opacity:1}50%{opacity:0.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
 .yk-live-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .yk-live-card{background:#1e293b;border-radius:14px;overflow:hidden;border:1px solid #334155;cursor:pointer;transition:all 0.3s}
 .yk-live-card:hover{border-color:#ef4444;transform:translateY(-3px)}
@@ -32,7 +36,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-live-time{font-size:11px;color:#64748b}
 .yk-section-title{padding:20px 20px 12px;font-size:15px;font-weight:700;color:#f8fafc}
 .yk-list{padding:0 20px 20px;display:flex;flex-direction:column;gap:10px}
-.yk-card{background:#1e293b;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;border:1px solid #334155;transition:all 0.25s}
+.yk-card{background:#1e293b;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;border:1px solid #334155;transition:all 0.25s;position:relative}
 .yk-card:hover{background:#252f47;border-color:#475569;transform:translateX(4px)}
 .yk-card-arrow{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:#64748b;font-size:22px}
 .yk-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;background:#0f172a;border:1px solid #334155}
@@ -78,29 +82,31 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 @keyframes spin{to{transform:rotate(360deg)}}
 .yk-page{display:none}
 .yk-page.active{display:block}
-.yk-player-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;display:none;align-items:center;justify-content:center;flex-direction:column}
-.yk-player-overlay.active{display:flex}
-.yk-player-box{width:95%;max-width:1100px;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #334155}
-.yk-player-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1e293b;border-bottom:1px solid #334155}
-.yk-player-title{font-size:14px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%}
-.yk-player-close{width:32px;height:32px;border-radius:8px;background:#334155;border:none;color:#e2e8f0;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.yk-player-close:hover{background:#475569}
-.yk-player-video{width:100%;aspect-ratio:16/9;background:#000;position:relative}
-.yk-player-video iframe{width:100%;height:100%;border:none}
-.yk-player-controls{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#1e293b}
-.yk-player-btn{background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;padding:4px}
-.yk-player-progress{flex:1;height:4px;background:#334155;border-radius:2px;cursor:pointer;position:relative}
-.yk-player-progress-fill{height:100%;background:#38bdf8;border-radius:2px;width:0%}
-.yk-player-time{font-size:11px;color:#64748b;font-weight:500;min-width:80px;text-align:right}
-.yk-player-fullscreen{background:none;border:none;color:#94a3b8;font-size:16px;cursor:pointer;padding:4px}
+
+/* ADMIN PANEL */
+.yk-admin-panel{background:#0f172a;border:1px solid #1e293b;border-radius:16px;margin:20px;padding:20px}
+.yk-admin-title{font-size:16px;font-weight:700;color:#f8fafc;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.yk-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.yk-admin-stat{background:#1e293b;border-radius:12px;padding:16px;border:1px solid #334155}
+.yk-admin-stat-value{font-size:28px;font-weight:800;color:#38bdf8;margin-bottom:4px}
+.yk-admin-stat-label{font-size:12px;color:#64748b}
+.yk-admin-stat-change{font-size:11px;color:#10b981;margin-top:4px}
+.yk-admin-users-list{max-height:300px;overflow-y:auto;margin-top:16px}
+.yk-admin-user-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#1e293b;border-radius:10px;margin-bottom:8px;border:1px solid #334155}
+.yk-admin-user-dot{width:8px;height:8px;background:#10b981;border-radius:50%}
+.yk-admin-user-info{flex:1}
+.yk-admin-user-name{font-size:13px;font-weight:600;color:#f1f5f9}
+.yk-admin-user-time{font-size:11px;color:#64748b}
+.yk-admin-user-device{font-size:11px;color:#475569}
+
 @media(max-width:768px){
 .yk-live-grid{grid-template-columns:repeat(3,1fr);gap:8px}
 .yk-live-info{padding:8px}
 .yk-live-name{font-size:11px}
 .yk-live-time{font-size:9px}
 .yk-live-badge{padding:2px 6px;font-size:9px}
-.yk-player-box{width:100%;height:100%;border-radius:0;border:none}
-.yk-player-overlay{padding:0}
+.yk-live-users{padding:4px 10px}
+.yk-live-users-count{font-size:12px}
 }
 @media(max-width:480px){
 .yk-live-grid{grid-template-columns:repeat(3,1fr);gap:6px}
@@ -118,14 +124,23 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-name{font-size:14px}
 }
 </style>
+<base target="_blank">
+<base target="_blank">
 </head>
 <body>
 <div id="yk-app">
 
+<!-- HOME PAGE -->
 <div class="yk-page active" id="page-home">
 <div class="yk-header">
 <button class="yk-back" id="home-back" style="opacity:0;pointer-events:none;">&lt;</button>
 <div class="yk-title">Yakeen NEET Hindi 2027</div>
+<!-- FAKE LIVE USERS COUNTER (Users see this) -->
+<div class="yk-live-users" id="live-users-badge">
+<div class="yk-live-users-dot"></div>
+<span class="yk-live-users-count" id="live-users-count">0</span>
+<span class="yk-live-users-label">Online</span>
+</div>
 </div>
 <div class="yk-top-tabs" id="home-tabs">
 <button class="yk-top-tab active" data-tab="classes">All Classes</button>
@@ -133,12 +148,51 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 <button class="yk-top-tab" data-tab="tests">Tests</button>
 <button class="yk-top-tab" data-tab="announcements">Announcements</button>
 </div>
+
+<!-- ADMIN PANEL - Shows REAL Firebase data -->
+<div class="yk-admin-panel" id="admin-panel" style="display:none;">
+<div class="yk-admin-title">📊 REAL Firebase Analytics (Ctrl+Shift+A to toggle)</div>
+<div class="yk-admin-grid">
+<div class="yk-admin-stat">
+<div class="yk-admin-stat-value" id="admin-real-users">0</div>
+<div class="yk-admin-stat-label">REAL Active Users</div>
+<div class="yk-admin-stat-change">From /liveUsers/</div>
+</div>
+<div class="yk-admin-stat">
+<div class="yk-admin-stat-value" id="admin-fake-users">0</div>
+<div class="yk-admin-stat-label">FAKE Display Count</div>
+<div class="yk-admin-stat-change">What users see</div>
+</div>
+<div class="yk-admin-stat">
+<div class="yk-admin-stat-value" id="admin-today-users">0</div>
+<div class="yk-admin-stat-label">Today's Unique</div>
+<div class="yk-admin-stat-change">From /stats/daily/</div>
+</div>
+<div class="yk-admin-stat">
+<div class="yk-admin-stat-value" id="admin-peak-users">0</div>
+<div class="yk-admin-stat-label">Peak Today</div>
+<div class="yk-admin-stat-change">Highest real count</div>
+</div>
+<div class="yk-admin-stat">
+<div class="yk-admin-stat-value" id="admin-db-size">0</div>
+<div class="yk-admin-stat-label">DB Nodes (liveUsers)</div>
+<div class="yk-admin-stat-change">Auto-delete every 1hr</div>
+</div>
+<div class="yk-admin-stat">
+<div class="yk-admin-stat-value" id="admin-next-cleanup">--</div>
+<div class="yk-admin-stat-label">Next Cleanup In</div>
+<div class="yk-admin-stat-change">Old sessions removed</div>
+</div>
+</div>
+<div class="yk-admin-users-list" id="admin-users-list"></div>
+</div>
+
 <div class="yk-live-section" id="live-section">
 <div class="yk-live-title"><div class="yk-live-dot"></div>Live Classes</div>
 <div class="yk-live-grid">
 <div class="yk-live-card" data-live="Physics Live">
 <div class="yk-live-thumb">
-<img src="https://placehold.co/400x225/1e293b/475569?text=Physics&amp;font=inter" alt="">
+<img src="https://placehold.co/400x225/1e293b/475569?text=Physics&font=inter" alt="">
 <div class="yk-live-badge">LIVE</div>
 </div>
 <div class="yk-live-info">
@@ -148,7 +202,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 </div>
 <div class="yk-live-card" data-live="Chemistry Live">
 <div class="yk-live-thumb">
-<img src="https://placehold.co/400x225/1e293b/475569?text=Chemistry&amp;font=inter" alt="">
+<img src="https://placehold.co/400x225/1e293b/475569?text=Chemistry&font=inter" alt="">
 <div class="yk-live-badge">LIVE</div>
 </div>
 <div class="yk-live-info">
@@ -158,7 +212,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 </div>
 <div class="yk-live-card" data-live="Biology Live">
 <div class="yk-live-thumb">
-<img src="https://placehold.co/400x225/1e293b/475569?text=Biology&amp;font=inter" alt="">
+<img src="https://placehold.co/400x225/1e293b/475569?text=Biology&font=inter" alt="">
 <div class="yk-live-badge">LIVE</div>
 </div>
 <div class="yk-live-info">
@@ -197,10 +251,16 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 </div>
 </div>
 
+<!-- SUBJECT PAGE -->
 <div class="yk-page" id="page-subject">
 <div class="yk-header">
 <button class="yk-back" id="subject-back">&lt;</button>
 <div class="yk-title" id="subject-title">Subject</div>
+<div class="yk-live-users">
+<div class="yk-live-users-dot"></div>
+<span class="yk-live-users-count" id="live-users-count-subject">0</span>
+<span class="yk-live-users-label">Online</span>
+</div>
 </div>
 <div class="yk-top-tabs" id="subject-tabs">
 <button class="yk-top-tab active" data-filter="chapters">Chapters</button>
@@ -210,10 +270,16 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 </div>
 </div>
 
+<!-- VIDEOS PAGE -->
 <div class="yk-page" id="page-videos">
 <div class="yk-header">
 <button class="yk-back" id="videos-back">&lt;</button>
 <div class="yk-title" id="chapter-title">Chapter</div>
+<div class="yk-live-users">
+<div class="yk-live-users-dot"></div>
+<span class="yk-live-users-count" id="live-users-count-videos">0</span>
+<span class="yk-live-users-label">Online</span>
+</div>
 </div>
 <div class="yk-video-tabs" id="video-tabs">
 <button class="yk-video-tab active" data-tab="lectures">Lectures</button>
@@ -225,34 +291,411 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 </div>
 </div>
 
-<div class="yk-player-overlay" id="video-player">
-<div class="yk-player-box">
-<div class="yk-player-header">
-<div class="yk-player-title" id="player-title">Video Title</div>
-<button class="yk-player-close" id="player-close">X</button>
-</div>
-<div class="yk-player-video">
-<iframe id="player-iframe" allowfullscreen></iframe>
-</div>
-<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:#1e293b;border-top:1px solid #334155;">
-<a id="open-video-btn" href="#" target="_blank" style="flex:1;padding:10px 0;background:#38bdf8;color:#0f172a;border-radius:8px;text-align:center;text-decoration:none;font-weight:700;font-size:14px;">Open Video in New Tab</a>
-</div>
-</div>
-</div>
-
 </div>
 
 <script>
 (function() {
 'use strict';
-var FIREBASE = 'https://sandeep-a3120-default-rtdb.firebaseio.com';
-var allData = null, currentSubject = '', currentChapter = '', historyStack = [];
 
+// ==================== CONFIG ====================
+var FIREBASE = 'https://sandeep-a3120-default-rtdb.firebaseio.com';
+var SESSION_TIMEOUT = 5 * 60 * 1000;      // 5 min - user marked inactive
+var CLEANUP_INTERVAL = 60 * 60 * 1000;     // 1 hour - delete old data
+var HEARTBEAT_INTERVAL = 60 * 1000;        // 60 sec - send heartbeat
+var FAKE_UPDATE_INTERVAL = 5 * 1000;       // 5 sec - fake count changes
+var REAL_UPDATE_INTERVAL = 30 * 1000;      // 30 sec - read real data
+
+// ==================== GLOBALS ====================
+var allData = null;
+var currentSubject = '';
+var currentChapter = '';
+var historyStack = [];
+var userSessionId = generateSessionId();
+var userStartTime = Date.now();
+var isAdminVisible = false;
+var realUserCount = 0;
+var currentFakeCount = 0;
+var nextCleanupTime = Date.now() + CLEANUP_INTERVAL;
+
+// ==================== SESSION ID ====================
+function generateSessionId() {
+    return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function getDeviceInfo() {
+    var ua = navigator.userAgent;
+    var device = 'Desktop';
+    if (/Android/.test(ua)) device = 'Android';
+    else if (/iPhone|iPad|iPod/.test(ua)) device = 'iOS';
+    else if (/Mobile/.test(ua)) device = 'Mobile';
+
+    var browser = 'Unknown';
+    if (/Chrome/.test(ua)) browser = 'Chrome';
+    else if (/Firefox/.test(ua)) browser = 'Firefox';
+    else if (/Safari/.test(ua)) browser = 'Safari';
+    else if (/Edge/.test(ua)) browser = 'Edge';
+
+    return { device: device, browser: browser };
+}
+
+// ==================== FAKE USER COUNT SYSTEM ====================
+var FakeCounter = {
+    getRange: function() {
+        var hour = new Date().getHours();
+        // Night: 7 PM (19) to 5 AM (5) -> 100-228
+        if (hour >= 19 || hour < 5) {
+            return { min: 100, max: 228 };
+        }
+        // Day: 6 AM (6) to 6 PM (18) -> 1100-1300
+        else {
+            return { min: 1100, max: 1300 };
+        }
+    },
+
+    generateCount: function() {
+        var range = this.getRange();
+        return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+    },
+
+    modifyCount: function(current) {
+        var range = this.getRange();
+        var change = Math.floor(Math.random() * 21) - 10; // -10 to +10
+        var newCount = current + change;
+        if (newCount < range.min) newCount = range.min + Math.floor(Math.random() * 10);
+        if (newCount > range.max) newCount = range.max - Math.floor(Math.random() * 10);
+        return newCount;
+    },
+
+    updateDisplay: function(count) {
+        currentFakeCount = count;
+        var counters = [
+            document.getElementById('live-users-count'),
+            document.getElementById('live-users-count-subject'),
+            document.getElementById('live-users-count-videos')
+        ];
+        counters.forEach(function(el) {
+            if (el) el.textContent = count;
+        });
+        var adminFake = document.getElementById('admin-fake-users');
+        if (adminFake) adminFake.textContent = count;
+    },
+
+    start: function() {
+        var self = this;
+        currentFakeCount = self.generateCount();
+        self.updateDisplay(currentFakeCount);
+        setInterval(function() {
+            currentFakeCount = self.modifyCount(currentFakeCount);
+            self.updateDisplay(currentFakeCount);
+        }, FAKE_UPDATE_INTERVAL);
+    }
+};
+
+// ==================== REAL FIREBASE LIVE USERS ====================
+var RealUsers = {
+    init: function() {
+        this.startHeartbeat();
+        this.listenToActiveUsers();
+        this.startAutoCleanup();
+        this.setupPageUnload();
+        this.updateDailyStats();
+    },
+
+    // Send heartbeat to /liveUsers/{sessionId}
+    startHeartbeat: function() {
+        var self = this;
+        self.sendHeartbeat();
+        setInterval(function() {
+            self.sendHeartbeat();
+        }, HEARTBEAT_INTERVAL);
+    },
+
+    sendHeartbeat: function() {
+        var deviceInfo = getDeviceInfo();
+        var data = {
+            lastSeen: Date.now(),
+            startTime: userStartTime,
+            page: window.location.hash || 'home',
+            device: deviceInfo.device,
+            browser: deviceInfo.browser,
+            screen: screen.width + 'x' + screen.height
+        };
+
+        var url = FIREBASE + '/liveUsers/' + userSessionId + '.json';
+        fetch(url, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }).catch(function(e) { });
+    },
+
+    // Read real active users from /liveUsers/
+    listenToActiveUsers: function() {
+        var self = this;
+
+        function fetchAndUpdate() {
+            fetch(FIREBASE + '/liveUsers.json')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    self.processUsers(data);
+                })
+                .catch(function(e) { console.log('Live users error:', e); });
+        }
+
+        fetchAndUpdate();
+        setInterval(fetchAndUpdate, REAL_UPDATE_INTERVAL);
+    },
+
+    processUsers: function(data) {
+        if (!data) {
+            realUserCount = 0;
+            this.updateAdminUI(0, []);
+            this.updateDBSize(0);
+            return;
+        }
+
+        var now = Date.now();
+        var activeUsers = [];
+        var totalCount = 0;
+        var totalNodes = 0;
+
+        for (var key in data) {
+            totalNodes++;
+            var user = data[key];
+            if (!user) continue;
+
+            // Count as active if lastSeen within 5 minutes
+            if (now - user.lastSeen < SESSION_TIMEOUT) {
+                totalCount++;
+                activeUsers.push({
+                    id: key,
+                    device: user.device || 'Unknown',
+                    browser: user.browser || 'Unknown',
+                    screen: user.screen || '',
+                    startTime: user.startTime || now,
+                    lastSeen: user.lastSeen || now,
+                    page: user.page || '/'
+                });
+            }
+        }
+
+        realUserCount = totalCount;
+        this.updateAdminUI(totalCount, activeUsers);
+        this.updateDBSize(totalNodes);
+        this.updatePeakUsers(totalCount);
+    },
+
+    updateAdminUI: function(count, users) {
+        var adminReal = document.getElementById('admin-real-users');
+        if (adminReal) adminReal.textContent = count;
+
+        var adminList = document.getElementById('admin-users-list');
+        if (adminList && isAdminVisible) {
+            this.renderUsersList(adminList, users);
+        }
+    },
+
+    renderUsersList: function(container, users) {
+        if (users.length === 0) {
+            container.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">No active users currently</div>';
+            return;
+        }
+
+        var html = '';
+        var now = Date.now();
+
+        users.forEach(function(user) {
+            var sessionTime = Math.floor((now - user.startTime) / 60000);
+            var lastActive = Math.floor((now - user.lastSeen) / 1000);
+            var timeText = lastActive < 60 ? lastActive + 's ago' : Math.floor(lastActive / 60) + 'm ago';
+
+            html += '<div class="yk-admin-user-item">' +
+                '<div class="yk-admin-user-dot"></div>' +
+                '<div class="yk-admin-user-info">' +
+                '<div class="yk-admin-user-name">' + escapeHtml(user.device) + ' - ' + escapeHtml(user.browser) + '</div>' +
+                '<div class="yk-admin-user-time">Session: ' + sessionTime + 'm | Last active: ' + timeText + '</div>' +
+                '<div class="yk-admin-user-device">Screen: ' + escapeHtml(user.screen) + ' | Page: ' + escapeHtml(user.page) + '</div>' +
+                '</div>' +
+                '</div>';
+        });
+
+        container.innerHTML = html;
+    },
+
+    updateDBSize: function(nodes) {
+        var el = document.getElementById('admin-db-size');
+        if (el) el.textContent = nodes;
+    },
+
+    updatePeakUsers: function(currentCount) {
+        var today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        fetch(FIREBASE + '/stats/daily/' + today + '/peakUsers.json')
+            .then(function(res) { return res.json(); })
+            .then(function(peak) {
+                var newPeak = Math.max(peak || 0, currentCount);
+
+                if (newPeak > (peak || 0)) {
+                    fetch(FIREBASE + '/stats/daily/' + today + '/peakUsers.json', {
+                        method: 'PUT',
+                        body: JSON.stringify(newPeak)
+                    }).catch(function(e) {});
+                }
+
+                var adminPeak = document.getElementById('admin-peak-users');
+                if (adminPeak) adminPeak.textContent = newPeak;
+            })
+            .catch(function(e) {});
+    },
+
+    // Track daily unique visitors (compact storage)
+    updateDailyStats: function() {
+        var today = new Date().toISOString().split('T')[0];
+
+        // Store as simple timestamp (like your screenshot)
+        fetch(FIREBASE + '/stats/daily/' + today + '/users/' + userSessionId + '.json', {
+            method: 'PUT',
+            body: JSON.stringify(Date.now())
+        }).catch(function(e) {});
+
+        // Update today's count every minute
+        setInterval(function() {
+            fetch(FIREBASE + '/stats/daily/' + today + '/users.json')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var count = data ? Object.keys(data).length : 0;
+                    var adminToday = document.getElementById('admin-today-users');
+                    if (adminToday) adminToday.textContent = count;
+                })
+                .catch(function(e) {});
+        }, 60000);
+    },
+
+    // ==================== AUTO CLEANUP EVERY 1 HOUR ====================
+    startAutoCleanup: function() {
+        var self = this;
+
+        // Run cleanup immediately on load
+        self.runCleanup();
+
+        // Then every 1 hour
+        setInterval(function() {
+            self.runCleanup();
+            nextCleanupTime = Date.now() + CLEANUP_INTERVAL;
+        }, CLEANUP_INTERVAL);
+
+        // Update countdown timer
+        setInterval(function() {
+            var remaining = nextCleanupTime - Date.now();
+            if (remaining < 0) remaining = 0;
+            var minutes = Math.floor(remaining / 60000);
+            var seconds = Math.floor((remaining % 60000) / 1000);
+            var el = document.getElementById('admin-next-cleanup');
+            if (el) el.textContent = minutes + 'm ' + seconds + 's';
+        }, 1000);
+    },
+
+    runCleanup: function() {
+        var now = Date.now();
+        var oneHourAgo = now - CLEANUP_INTERVAL;
+
+        console.log('[CLEANUP] Running auto-cleanup at:', new Date().toLocaleString());
+
+        fetch(FIREBASE + '/liveUsers.json')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data) return;
+
+                var deletedCount = 0;
+                var promises = [];
+
+                for (var key in data) {
+                    var user = data[key];
+                    // Delete if: no data, or lastSeen older than 1 hour, or startTime older than 1 hour
+                    if (!user || !user.lastSeen || user.lastSeen < oneHourAgo) {
+                        promises.push(
+                            fetch(FIREBASE + '/liveUsers/' + key + '.json', {
+                                method: 'DELETE'
+                            }).then(function() {
+                                deletedCount++;
+                            }).catch(function(e) {})
+                        );
+                    }
+                }
+
+                return Promise.all(promises).then(function() {
+                    console.log('[CLEANUP] Deleted', deletedCount, 'old sessions');
+                });
+            })
+            .catch(function(e) {
+                console.log('[CLEANUP] Error:', e);
+            });
+
+        // Also cleanup old daily stats (keep only last 7 days)
+        self.cleanupOldDailyStats();
+    },
+
+    cleanupOldDailyStats: function() {
+        var now = new Date();
+        var cutoff = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000)); // 7 days ago
+        var cutoffStr = cutoff.toISOString().split('T')[0];
+
+        fetch(FIREBASE + '/stats/daily.json')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data) return;
+
+                for (var dateKey in data) {
+                    if (dateKey < cutoffStr) {
+                        fetch(FIREBASE + '/stats/daily/' + dateKey + '.json', {
+                            method: 'DELETE'
+                        }).catch(function(e) {});
+                    }
+                }
+            })
+            .catch(function(e) {});
+    },
+
+    // Remove user on page unload
+    setupPageUnload: function() {
+        window.addEventListener('beforeunload', function() {
+            var url = FIREBASE + '/liveUsers/' + userSessionId + '.json';
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(url, new Blob([], { type: 'application/json' }));
+            } else {
+                fetch(url, { method: 'DELETE' }).catch(function(e) {});
+            }
+        });
+    }
+};
+
+// ==================== ADMIN PANEL TOGGLE ====================
+function setupAdminPanel() {
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+            e.preventDefault();
+            isAdminVisible = !isAdminVisible;
+            var panel = document.getElementById('admin-panel');
+            if (panel) {
+                panel.style.display = isAdminVisible ? 'block' : 'none';
+            }
+        }
+    });
+}
+
+// ==================== EXISTING APP CODE ====================
 function organizeData(rawData) {
 var organized = {};
 for (var key in rawData) {
 var folderData = rawData[key];
 if (!folderData) continue;
+
+var lowerKey = key.toLowerCase().trim();
+if (lowerKey === 'liveusers' || lowerKey === 'live_users' || 
+    lowerKey === 'stats' || lowerKey === 'analytics' ||
+    lowerKey === 'users' || lowerKey === 'sessions') {
+    continue;
+}
+
 var folderLower = key.toLowerCase().trim(), contentType = '', chapterName = '';
 if (folderLower.indexOf(' video') === folderLower.length - 6) { contentType = 'video'; chapterName = key.substring(0, key.length - 6).trim(); }
 else if (folderLower.indexOf(' videos') === folderLower.length - 7) { contentType = 'video'; chapterName = key.substring(0, key.length - 7).trim(); }
@@ -376,7 +819,7 @@ var videos = chapter.videos;
 for (var i = 0; i < videos.length; i++) {
 var item = videos[i]; count++;
 var date = item.date || '', url = item.url || '#';
-html += '<div class="yk-video-card" data-video-url="' + escapeHtml(url) + '" data-video-title="' + escapeHtml(cleanTitle(item.title)) + '"><div class="yk-video-row"><div class="yk-video-thumb"><img src="https://placehold.co/200x140/0f172a/38bdf8?text=L' + (i + 1) + '&amp;font=inter" alt=""><div class="play-icon"></div></div><div class="yk-video-info"><div class="yk-video-title">' + escapeHtml(cleanTitle(item.title)) + '</div><div class="yk-video-meta">' + escapeHtml(date) + '</div></div><div class="yk-video-arrow">&gt;</div></div></div>';
+html += '<div class="yk-video-card" data-video-url="' + escapeHtml(url) + '" data-video-title="' + escapeHtml(cleanTitle(item.title)) + '"><div class="yk-video-row"><div class="yk-video-thumb"><img src="https://placehold.co/200x140/0f172a/38bdf8?text=L' + (i + 1) + '&font=inter" alt=""><div class="play-icon"></div></div><div class="yk-video-info"><div class="yk-video-title">' + escapeHtml(cleanTitle(item.title)) + '</div><div class="yk-video-meta">' + escapeHtml(date) + '</div></div><div class="yk-video-arrow">&gt;</div></div></div>';
 }
 } else if (tab === 'notes') {
 var notes = chapter.notes;
@@ -401,22 +844,13 @@ attachVideoClicks();
 function showLiveAlert(name) { alert(name + ' - Coming Soon! Live classes will start soon.'); }
 
 function openPlayer(url, title) {
-if (!url || url === '#') return;
-document.getElementById('player-title').textContent = title || 'Video';
-document.getElementById('open-video-btn').href = url;
-document.getElementById('player-iframe').src = url;
-document.getElementById('video-player').classList.add('active');
-}
-
-function closePlayer() {
-document.getElementById('player-iframe').src = '';
-document.getElementById('video-player').classList.remove('active');
-if (document.fullscreenElement) { document.exitFullscreen(); }
+    if (!url || url === '#') return;
+    window.open(url, '_blank');
 }
 
 function cleanTitle(title) {
 if (!title) return 'Untitled';
-return title.replace(/Name:\s*/gi, '').replace(/ZX/gi, '').replace(/NO DPP/gi, '').replace(/Recorded/gi, '').replace(/Class Notes and Download Option will be Provided Soon/gi, '').replace(/\.mkv/gi, '').replace(/\.mp4/gi, '').replace(/\.pdf/gi, '').replace(/\s+/g, ' ').trim();
+return title.replace(/Name:\s*/gi, '').replace(/\.mkv/gi, '').replace(/\.mp4/gi, '').replace(/\.pdf/gi, '').replace(/\s+/g, ' ').trim();
 }
 
 function escapeHtml(text) {
@@ -534,19 +968,24 @@ document.getElementById('subject-back').addEventListener('click', function(e) { 
 document.getElementById('videos-back').addEventListener('click', function(e) { goBack(); });
 }
 
-function attachPlayerControls() {
-document.getElementById('player-close').addEventListener('click', function(e) { closePlayer(); });
-}
-
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closePlayer(); } });
-
+// ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', function() {
 attachSubjectClicks();
 attachLiveClicks();
 attachTabClicks();
 attachBackButtons();
-attachPlayerControls();
+
+// Start FAKE counter for users
+FakeCounter.start();
+
+// Start REAL Firebase tracking
+RealUsers.init();
+
+// Setup Admin Panel
+setupAdminPanel();
+
 console.log('Yakeen App initialized');
+console.log('Users see FAKE count | Admin (Ctrl+Shift+A) sees REAL data');
 });
 
 })();
