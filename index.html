@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 🔥 ANTI-BLOCK META TAGS -->
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data: blob:; media-src 'self' https: blob:;">
 <title>Yakeen NEET 2.O 2027</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -163,7 +167,6 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-name{font-size:14px}
 }
 </style>
-<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -328,6 +331,28 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 <script>
 (function() {
 'use strict';
+
+// ==================== IMAGE PROXY HELPER (ANTI-BLOCK) ====================
+// Yeh function kisi bhi blocked image URL ko proxy se load karega
+function getProxyImageUrl(originalUrl) {
+    if (!originalUrl || originalUrl.length < 5) return '';
+
+    // Agar already safe/proxy URL hai, toh waisa hi rahe
+    if (originalUrl.indexOf('placehold.co') !== -1 || 
+        originalUrl.indexOf('img.youtube.com') !== -1 ||
+        originalUrl.indexOf('i.ytimg.com') !== -1 ||
+        originalUrl.indexOf('images.weserv.nl') !== -1) {
+        return originalUrl;
+    }
+
+    // Agar already HTTPS nahi hai, toh HTTPS bana dein
+    if (originalUrl.indexOf('http://') === 0) {
+        originalUrl = originalUrl.replace('http://', 'https://');
+    }
+
+    // Free image proxy - yeh blocked images ko bypass karega
+    return 'https://images.weserv.nl/?url=' + encodeURIComponent(originalUrl) + '&n=-1&w=400&h=225';
+}
 
 // ==================== CONFIG ====================
 var FIREBASE_CONFIG = {
@@ -504,9 +529,9 @@ function updateLiveCard(index, data) {
     var nameEl = card.querySelector('.yk-live-name');
     var timeEl = card.querySelector('.yk-live-time');
 
-    // Always show thumbnail if available
+    // 🔥 PROXY FIX: Thumbnail proxy se load karein
     if (data && data.thumbnail && data.thumbnail.length > 10) {
-        thumbImg.src = data.thumbnail;
+        thumbImg.src = getProxyImageUrl(data.thumbnail);
     } else {
         thumbImg.src = LIVE_CLASSES[index].defaultThumb;
     }
@@ -860,8 +885,9 @@ function renderSubjectChapters(subject, filter) {
 
         var chThumb = '';
         var firstVid = ch.videos && ch.videos.length > 0 ? ch.videos[0] : null;
+        // 🔥 PROXY FIX: Chapter thumbnail proxy se load karein
         if (firstVid && firstVid.thumbnail) {
-            chThumb = '<img src="' + escapeHtml(firstVid.thumbnail) + '" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">';
+            chThumb = '<img src="' + escapeHtml(getProxyImageUrl(firstVid.thumbnail)) + '" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">';
         } else {
             chThumb = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:20px;font-weight:700;">' + idx + '</div>';
         }
@@ -913,8 +939,9 @@ function renderVideos(tab) {
             var thumbnail = item.thumbnail || '';
             var thumbHtml = '';
 
+            // 🔥 PROXY FIX: Video thumbnail proxy se load karein
             if (thumbnail && thumbnail.length > 10) {
-                thumbHtml = '<img src="' + escapeHtml(thumbnail) + '" alt="" onerror="this.src=\'https://placehold.co/200x140/0f172a/38bdf8?text=V' + (i+1) + '&font=inter\'">';
+                thumbHtml = '<img src="' + escapeHtml(getProxyImageUrl(thumbnail)) + '" alt="" onerror="this.src=\'https://placehold.co/200x140/0f172a/38bdf8?text=V' + (i+1) + '&font=inter\'">';
             } else {
                 thumbHtml = '<img src="https://placehold.co/200x140/0f172a/38bdf8?text=V' + (i+1) + '&font=inter" alt="">';
             }
