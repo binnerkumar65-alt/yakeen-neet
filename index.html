@@ -169,7 +169,15 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 @media(max-width:600px){
 .yk-name{font-size:14px}
 }
+
+/* ===== FAKE ONLINE USER COUNTER (HEADER INLINE) ===== */
+.yk-online-counter{display:inline-flex;align-items:center;gap:6px;margin-left:auto;padding:4px 10px;background:rgba(30,41,59,0.8);border:1px solid #334155;border-radius:8px}
+.yk-online-dot{width:7px;height:7px;background:#10b981;border-radius:50%;animation:ykBlink 1.5s infinite}
+.yk-online-text{font-size:11px;font-weight:600;color:#94a3b8}
+.yk-online-count{font-size:12px;font-weight:800;color:#38bdf8;min-width:36px;text-align:right}
+@keyframes ykBlink{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
 </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -183,6 +191,11 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 <div class="yk-header">
 <button class="yk-back" id="home-back" style="opacity:0;pointer-events:none;">&lt;</button>
 <div class="yk-title">Yakeen NEET 2.O 2027</div>
+<div class="yk-online-counter" id="yk-online-counter">
+<div class="yk-online-dot"></div>
+<div class="yk-online-text">Online:</div>
+<div class="yk-online-count" id="yk-online-count">--</div>
+</div>
 </div>
 <div class="yk-top-tabs" id="home-tabs">
 <button class="yk-top-tab active" data-tab="classes">All Classes</button>
@@ -557,67 +570,93 @@ function updateLiveCardSizes() {
 }
 
 function startAutoScroll() {
-    if (autoScrollInterval) clearInterval(autoScrollInterval);
+    // Cleanup previous
+    if (autoScrollInterval) {
+        cancelAnimationFrame(autoScrollInterval);
+        autoScrollInterval = null;
+    }
+    var oldStyle = document.getElementById('yk-marquee-style');
+    if (oldStyle) oldStyle.remove();
+
     var grid = document.querySelector('.yk-live-grid');
     if (!grid) return;
-    var cards = grid.querySelectorAll('.yk-live-card');
-    if (cards.length <= 4) return;
 
-    var currentIndex = 0;
-    var totalCards = cards.length;
+    // Remove old clones
+    var oldClones = grid.querySelectorAll('.yk-live-card.yk-clone');
+    for (var c = 0; c < oldClones.length; c++) {
+        oldClones[c].remove();
+    }
+    grid.style.animation = '';
+    grid.style.transform = '';
 
-    autoScrollInterval = setInterval(function() {
-        if (isUserInteracting) return;
-        var cardWidth = cards[0].offsetWidth + 12;
-        var maxIndex = Math.max(0, totalCards - 4);
-        currentIndex++;
-        if (currentIndex > maxIndex) currentIndex = 0;
-        grid.scrollTo({ left: currentIndex * cardWidth, behavior: 'smooth' });
-    }, 3000);
+    var cards = grid.querySelectorAll('.yk-live-card:not(.yk-clone)');
+    if (cards.length <= 1) {
+        console.log('[AutoScroll] Need > 1 cards');
+        return;
+    }
+
+    var cardWidth = cards[0].offsetWidth + 12;
+    var totalOriginal = cards.length;
+    var oneSetWidth = totalOriginal * cardWidth;
+
+    // Clone 2 sets for seamless loop
+    for (var s = 0; s < 2; s++) {
+        for (var i = 0; i < totalOriginal; i++) {
+            var clone = cards[i].cloneNode(true);
+            clone.classList.add('yk-clone');
+            clone.style.pointerEvents = 'none';
+            clone.style.flexShrink = '0';
+            grid.appendChild(clone);
+        }
+    }
+
+    // Inject CSS animation
+    var duration = Math.max(totalOriginal * 2.5, 10);
+    var style = document.createElement('style');
+    style.id = 'yk-marquee-style';
+    style.textContent =
+        '.yk-live-grid { ' +
+        'animation: ykMarquee ' + duration + 's linear infinite; ' +
+        'width: max-content !important; ' +
+        '} ' +
+        '@keyframes ykMarquee { ' +
+        '0% { transform: translateX(0); } ' +
+        '100% { transform: translateX(-' + oneSetWidth + 'px); } ' +
+        '} ' +
+        '.yk-live-grid:hover { animation-play-state: paused; }';
+    document.head.appendChild(style);
+
+    console.log('[AutoScroll] Marquee: ' + duration + 's, width: ' + oneSetWidth + 'px');
 }
 
 function initLiveSwipe() {
     var grid = document.querySelector('.yk-live-grid');
     if (!grid) return;
-    var startX = 0, scrollLeft = 0, isDown = false;
-
-    grid.addEventListener('touchstart', function(e) {
-        isUserInteracting = true;
-        startX = e.touches[0].pageX - grid.offsetLeft;
-        scrollLeft = grid.scrollLeft;
-        if (userInteractionTimeout) clearTimeout(userInteractionTimeout);
+    grid.addEventListener('touchstart', function() {
+        grid.style.animationPlayState = 'paused';
     }, { passive: true });
-
-    grid.addEventListener('touchmove', function(e) {
-        var x = e.touches[0].pageX - grid.offsetLeft;
-        grid.scrollLeft = scrollLeft - (x - startX) * 1.5;
-    }, { passive: true });
-
     grid.addEventListener('touchend', function() {
-        userInteractionTimeout = setTimeout(function() { isUserInteracting = false; }, 3000);
+        setTimeout(function() { grid.style.animationPlayState = 'running'; }, 3000);
     });
-
-    grid.addEventListener('mousedown', function(e) {
-        isUserInteracting = true; isDown = true;
-        startX = e.pageX - grid.offsetLeft; scrollLeft = grid.scrollLeft;
-        grid.style.cursor = 'grabbing';
-    });
-    grid.addEventListener('mouseleave', function() { isDown = false; grid.style.cursor = 'grab'; userInteractionTimeout = setTimeout(function() { isUserInteracting = false; }, 3000); });
-    grid.addEventListener('mouseup', function() { isDown = false; grid.style.cursor = 'grab'; userInteractionTimeout = setTimeout(function() { isUserInteracting = false; }, 3000); });
-    grid.addEventListener('mousemove', function(e) { if (!isDown) return; e.preventDefault(); grid.scrollLeft = scrollLeft - (e.pageX - grid.offsetLeft - startX) * 1.5; });
-    grid.style.cursor = 'grab';
 }
 
 function checkLiveOverflow() {
     var grid = document.querySelector('.yk-live-grid');
     if (!grid) return;
-    var cards = grid.querySelectorAll('.yk-live-card');
-    if (cards.length > 4) {
-        if (!autoScrollInterval) startAutoScroll();
+
+    var cards = grid.querySelectorAll('.yk-live-card:not(.yk-clone)');
+    console.log('[CheckOverflow] Cards:', cards.length);
+
+    if (cards.length > 1) {
+        startAutoScroll();
     } else {
-        if (autoScrollInterval) { clearInterval(autoScrollInterval); autoScrollInterval = null; }
+        var oldStyle = document.getElementById('yk-marquee-style');
+        if (oldStyle) oldStyle.remove();
+        grid.style.animation = '';
+        grid.style.transform = '';
+        var cloned = grid.querySelectorAll('.yk-live-card.yk-clone');
+        for (var c = 0; c < cloned.length; c++) cloned[c].remove();
         grid.scrollLeft = 0;
-        updateLiveCardSizes();
     }
 }
 
@@ -1303,7 +1342,7 @@ function attachLiveClicks() {
     if (grid._liveClickHandler) grid.removeEventListener('click', grid._liveClickHandler);
     grid._liveClickHandler = function(e) {
         var card = e.target.closest('.yk-live-card');
-        if (!card) return;
+        if (!card || card.classList.contains('yk-clone')) return;
         var url = card.getAttribute('data-video-url');
         var title = card.getAttribute('data-video-title');
         var status = card.querySelector('.yk-live-badge');
@@ -1311,10 +1350,8 @@ function attachLiveClicks() {
 
         if (url && url.length > 5) {
             if (isLive) {
-                // 🔥 LIVE CLASS: Page se bahar new tab mein
                 window.open(url, '_blank');
             } else {
-                // 📹 RECORDED/ENDED: Player iframe mein hi
                 openPlayer(url, title);
             }
         } else {
@@ -1568,6 +1605,48 @@ window.addEventListener('beforeunload', function() {
     if (activeUserRef) activeUserRef.remove();
 });
 
+
+// ==================== FAKE ONLINE USER COUNTER ====================
+function initFakeOnlineCounter() {
+    var counterEl = document.getElementById('yk-online-count');
+    if (!counterEl) return;
+
+    function getFakeCount() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var totalMin = h * 60 + m;
+        var isDay = h >= 6 && h < 18;
+
+        if (isDay) {
+            var progress = (totalMin - 360) / 720;
+            var peak = Math.sin(progress * Math.PI);
+            return Math.floor(1129 + (101 * peak) + (Math.random() * 10 - 5));
+        } else {
+            var progress = h >= 18 ? (totalMin - 1080) / 720 : (totalMin + 360) / 720;
+            var peak = Math.sin(progress * Math.PI);
+            return Math.floor(89 + (111 * peak) + (Math.random() * 6 - 3));
+        }
+    }
+
+    counterEl.textContent = getFakeCount();
+
+    setInterval(function() {
+        var cur = parseInt(counterEl.textContent) || 0;
+        var change = Math.floor(Math.random() * 5) - 2;
+        var next = cur + change;
+        var h = new Date().getHours();
+        if (h >= 6 && h < 18) {
+            if (next < 1120) next = 1120;
+            if (next > 1240) next = 1240;
+        } else {
+            if (next < 80) next = 80;
+            if (next > 215) next = 215;
+        }
+        counterEl.textContent = next;
+    }, 4000 + Math.floor(Math.random() * 4000));
+}
+
 // ==================== INIT ====================
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', function() {
@@ -1596,10 +1675,13 @@ document.addEventListener('DOMContentLoaded', function() {
     attachBackButtons();
     attachPlayerControls();
 
-    // Step 8: Init live grid swipe and clicks
+    // Step 8: Init live grid
     initLiveSwipe();
     attachLiveClicks();
-    checkLiveOverflow();
+
+    // Step 9: Fake online counter
+    initFakeOnlineCounter();
+    // Auto slide starts automatically when cards > 4
 
     window.addEventListener('resize', function() {
         checkLiveOverflow();
