@@ -31,7 +31,10 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-live-title{font-size:15px;font-weight:700;color:#f8fafc;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .yk-live-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;animation:pulse 1.5s infinite}
 @keyframes pulse{0%{opacity:1}50%{opacity:0.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-.yk-live-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.yk-live-grid{display:flex;flex-wrap:nowrap;gap:12px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;touch-action:pan-x}
+.yk-live-grid::-webkit-scrollbar{display:none!important}
+.yk-live-grid:active{cursor:grabbing}
+.yk-live-card{flex:0 0 260px;min-width:260px;max-width:260px;width:260px;scroll-snap-align:start;box-sizing:border-box}
 .yk-live-card{background:#1e293b;border-radius:14px;overflow:hidden;border:1px solid #334155;cursor:pointer;transition:all 0.3s}
 .yk-live-card:hover{border-color:#ef4444;transform:translateY(-3px)}
 .yk-live-card.upcoming{border-color:#334155 !important;cursor:default !important}
@@ -144,7 +147,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-player-box:fullscreen #iframe-player{height:100vh}
 
 @media(max-width:768px){
-.yk-live-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+.yk-live-card{flex:0 0 200px;min-width:200px;max-width:200px;width:200px}
 .yk-live-info{padding:8px}
 .yk-live-name{font-size:11px}
 .yk-live-time{font-size:9px}
@@ -152,7 +155,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-video-thumb{width:150px;height:95px}
 }
 @media(max-width:480px){
-.yk-live-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+.yk-live-card{flex:0 0 160px;min-width:160px;max-width:160px;width:160px}
 .yk-live-section{padding:12px}
 .yk-video-thumb{width:110px;height:75px}
 .yk-video-title{font-size:13px}
@@ -167,6 +170,8 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-name{font-size:14px}
 }
 </style>
+<base target="_blank">
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -188,37 +193,8 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 
 <div class="yk-live-section" id="live-section">
 <div class="yk-live-title"><div class="yk-live-dot"></div>Live Classes</div>
-<div class="yk-live-grid">
-<div class="yk-live-card upcoming" data-live="Physics Live" data-class-key="physics-live">
-<div class="yk-live-thumb">
-<img src="https://placehold.co/400x225/1e293b/475569?text=Physics&font=inter" alt="">
-<div class="yk-live-badge upcoming">UPCOMING</div>
-</div>
-<div class="yk-live-info">
-<div class="yk-live-name">Physics Live</div>
-<div class="yk-live-time">8:00 AM</div>
-</div>
-</div>
-<div class="yk-live-card upcoming" data-live="Chemistry Live" data-class-key="chemistry-live">
-<div class="yk-live-thumb">
-<img src="https://placehold.co/400x225/1e293b/475569?text=Chemistry&font=inter" alt="">
-<div class="yk-live-badge upcoming">UPCOMING</div>
-</div>
-<div class="yk-live-info">
-<div class="yk-live-name">Chemistry Live</div>
-<div class="yk-live-time">10:00 AM</div>
-</div>
-</div>
-<div class="yk-live-card upcoming" data-live="Biology Live" data-class-key="biology-live">
-<div class="yk-live-thumb">
-<img src="https://placehold.co/400x225/1e293b/475569?text=Biology&font=inter" alt="">
-<div class="yk-live-badge upcoming">UPCOMING</div>
-</div>
-<div class="yk-live-info">
-<div class="yk-live-name">Biology Live</div>
-<div class="yk-live-time">12:00 PM</div>
-</div>
-</div>
+<div class="yk-live-grid" id="yk-live-grid">
+<div class="yk-loading" id="live-loading" style="padding:20px;text-align:center;width:100%;"><div class="yk-spinner"></div><p>Loading live classes...</p></div>
 </div>
 </div>
 <div class="yk-section-title">Subjects</div>
@@ -360,11 +336,7 @@ var FIREBASE_CONFIG = {
 };
 
 // ==================== LIVE CLASSES CONFIG ====================
-var LIVE_CLASSES = [
-    { key: "physics-live", name: "Physics Live", time: "8:00 AM", defaultThumb: "https://placehold.co/400x225/1e293b/475569?text=Physics&font=inter" },
-    { key: "chemistry-live", name: "Chemistry Live", time: "10:00 AM", defaultThumb: "https://placehold.co/400x225/1e293b/475569?text=Chemistry&font=inter" },
-    { key: "biology-live", name: "Biology Live", time: "12:00 PM", defaultThumb: "https://placehold.co/400x225/1e293b/475569?text=Biology&font=inter" }
-];
+var LIVE_CLASSES = []; // All cards from Firebase dynamically
 
 // ==================== GLOBALS ====================
 var allData = null;
@@ -440,7 +412,12 @@ function autoCreateKeys() {
     });
 }
 
-// ==================== LIVE CLASSES LISTENER ====================
+// ==================== LIVE CLASSES LISTENER (FULLY DYNAMIC) ====================
+var autoScrollInterval = null;
+var autoScrollDirection = 1;
+var isUserInteracting = false;
+var userInteractionTimeout = null;
+
 function initLiveClasses() {
     if (!db) {
         console.log('[Live] Firebase not ready, retrying...');
@@ -448,42 +425,200 @@ function initLiveClasses() {
         return;
     }
 
-    console.log('[Live] Starting listeners...');
+    console.log('[Live] Starting dynamic listener...');
 
-    LIVE_CLASSES.forEach(function(liveClass, index) {
-        var liveRef = db.ref('liveClasses/' + liveClass.key);
+    var liveSection = document.getElementById('live-section');
 
-        // Real-time listener
-        liveRef.on('value', function(snapshot) {
-            var data = snapshot.val();
-            console.log('[Live] ' + liveClass.key + ':', data);
-            updateLiveCard(index, data);
-        }, function(err) {
-            console.log('[Live] Error for ' + liveClass.key + ':', err);
-        });
+    function updateLiveSectionVisibility(hasData) {
+        if (!liveSection) return;
+        if (hasData) {
+            liveSection.classList.remove('hidden');
+        } else {
+            liveSection.classList.add('hidden');
+        }
+    }
+
+    // Listen to ALL liveClasses dynamically
+    db.ref('liveClasses').on('value', function(snapshot) {
+        var allData = snapshot.val();
+        console.log('[Live] Firebase data:', allData);
+
+        if (!allData) {
+            updateLiveSectionVisibility(false);
+            renderLiveCards([]);
+            return;
+        }
+
+        var cards = [];
+        var hasValidData = false;
+
+        for (var key in allData) {
+            if (key === 'created') continue;
+            var item = allData[key];
+            if (!item) continue;
+
+            if (item.url || item.thumbnail) {
+                hasValidData = true;
+            }
+
+            // Status: ended=true → ENDED, ended=false → LIVE, else → UPCOMING
+            var status = 'upcoming';
+            if (item.ended === true) status = 'ended';
+            else if (item.ended === false) status = 'live';
+
+            cards.push({
+                key: key,
+                name: item.name || key.replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); }),
+                time: item.time || '',
+                url: item.url || '',
+                thumbnail: item.thumbnail || '',
+                status: status
+            });
+        }
+
+        updateLiveSectionVisibility(hasValidData);
+        renderLiveCards(cards);
+    }, function(err) {
+        console.log('[Live] Error:', err);
+        updateLiveSectionVisibility(false);
     });
 
     // Auto-check endTime every 30 seconds
     setInterval(function() {
-        LIVE_CLASSES.forEach(function(liveClass, index) {
-            var liveRef = db.ref('liveClasses/' + liveClass.key);
-            liveRef.once('value').then(function(snapshot) {
-                var data = snapshot.val();
-                if (data && data.endTime && data.url) {
+        db.ref('liveClasses').once('value').then(function(snapshot) {
+            var allData = snapshot.val();
+            if (!allData) return;
+            for (var key in allData) {
+                if (key === 'created') continue;
+                var data = allData[key];
+                if (data && data.endTime && data.ended !== true) {
                     var now = new Date().getTime();
                     var end = new Date(data.endTime).getTime();
-                    if (!isNaN(end) && now > end && (!data.ended || data.ended !== true)) {
-                        // Auto-update ended to true in Firebase
-                        liveRef.update({ ended: true }).then(function() {
-                            console.log('[AutoEnd] ' + liveClass.key + ' auto-ended at ' + new Date().toISOString());
-                        }).catch(function(err) {
-                            console.log('[AutoEnd] Error:', err);
-                        });
+                    if (!isNaN(end) && now > end) {
+                        db.ref('liveClasses/' + key).update({ ended: true });
                     }
                 }
-            });
+            }
         });
-    }, 30000); // Check every 30 seconds
+    }, 30000);
+}
+
+function renderLiveCards(cards) {
+    var grid = document.getElementById('yk-live-grid');
+    if (!grid) return;
+
+    if (cards.length === 0) {
+        grid.innerHTML = '<div class="yk-empty" style="padding:20px;text-align:center;width:100%;"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No live classes</div></div>';
+        checkLiveOverflow();
+        return;
+    }
+
+    var html = '';
+    cards.forEach(function(card) {
+        var thumbUrl = card.thumbnail && card.thumbnail.length > 10 
+            ? getProxyImageUrl(card.thumbnail) 
+            : 'https://placehold.co/400x225/1e293b/475569?text=' + encodeURIComponent(card.name.substring(0, 10)) + '&font=inter';
+
+        var badgeClass = card.status;
+        var badgeText = card.status === 'ended' ? 'CLASS ENDED' : (card.status === 'live' ? 'LIVE' : 'UPCOMING');
+        var cardClass = card.status !== 'live' ? 'yk-live-card upcoming' : 'yk-live-card';
+        var borderColor = card.status !== 'live' ? '#334155' : '#ef4444';
+        var cursor = card.status !== 'live' ? 'default' : 'pointer';
+        var dataAttrs = card.status === 'live' ? ' data-video-url="' + escapeHtml(card.url) + '" data-video-title="' + escapeHtml(card.name) + '"' : '';
+
+        html += '<div class="' + cardClass + '" data-live="' + escapeHtml(card.name) + '" data-class-key="' + escapeHtml(card.key) + '"' + dataAttrs + ' style="border-color:' + borderColor + ';cursor:' + cursor + '">' +
+            '<div class="yk-live-thumb">' +
+            '<img src="' + escapeHtml(thumbUrl) + '" alt="">' +
+            '<div class="yk-live-badge ' + badgeClass + '">' + badgeText + '</div>' +
+            '</div>' +
+            '<div class="yk-live-info">' +
+            '<div class="yk-live-name">' + escapeHtml(card.name) + '</div>' +
+            '<div class="yk-live-time">' + escapeHtml(card.time) + '</div>' +
+            '</div>' +
+            '</div>';
+    });
+
+    grid.innerHTML = html;
+
+    // Handle image errors
+    var imgs = grid.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+        imgs[i].onerror = function() {
+            this.onerror = null;
+            this.src = 'https://placehold.co/400x225/1e293b/475569?text=Error&font=inter';
+        };
+    }
+
+    checkLiveOverflow();
+}
+
+function updateLiveCardSizes() {
+    // Fixed width cards - no need to calculate
+}
+
+function startAutoScroll() {
+    if (autoScrollInterval) clearInterval(autoScrollInterval);
+    var grid = document.querySelector('.yk-live-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.yk-live-card');
+    if (cards.length <= 4) return;
+
+    var currentIndex = 0;
+    var totalCards = cards.length;
+
+    autoScrollInterval = setInterval(function() {
+        if (isUserInteracting) return;
+        var cardWidth = cards[0].offsetWidth + 12;
+        var maxIndex = Math.max(0, totalCards - 4);
+        currentIndex++;
+        if (currentIndex > maxIndex) currentIndex = 0;
+        grid.scrollTo({ left: currentIndex * cardWidth, behavior: 'smooth' });
+    }, 3000);
+}
+
+function initLiveSwipe() {
+    var grid = document.querySelector('.yk-live-grid');
+    if (!grid) return;
+    var startX = 0, scrollLeft = 0, isDown = false;
+
+    grid.addEventListener('touchstart', function(e) {
+        isUserInteracting = true;
+        startX = e.touches[0].pageX - grid.offsetLeft;
+        scrollLeft = grid.scrollLeft;
+        if (userInteractionTimeout) clearTimeout(userInteractionTimeout);
+    }, { passive: true });
+
+    grid.addEventListener('touchmove', function(e) {
+        var x = e.touches[0].pageX - grid.offsetLeft;
+        grid.scrollLeft = scrollLeft - (x - startX) * 1.5;
+    }, { passive: true });
+
+    grid.addEventListener('touchend', function() {
+        userInteractionTimeout = setTimeout(function() { isUserInteracting = false; }, 3000);
+    });
+
+    grid.addEventListener('mousedown', function(e) {
+        isUserInteracting = true; isDown = true;
+        startX = e.pageX - grid.offsetLeft; scrollLeft = grid.scrollLeft;
+        grid.style.cursor = 'grabbing';
+    });
+    grid.addEventListener('mouseleave', function() { isDown = false; grid.style.cursor = 'grab'; userInteractionTimeout = setTimeout(function() { isUserInteracting = false; }, 3000); });
+    grid.addEventListener('mouseup', function() { isDown = false; grid.style.cursor = 'grab'; userInteractionTimeout = setTimeout(function() { isUserInteracting = false; }, 3000); });
+    grid.addEventListener('mousemove', function(e) { if (!isDown) return; e.preventDefault(); grid.scrollLeft = scrollLeft - (e.pageX - grid.offsetLeft - startX) * 1.5; });
+    grid.style.cursor = 'grab';
+}
+
+function checkLiveOverflow() {
+    var grid = document.querySelector('.yk-live-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.yk-live-card');
+    if (cards.length > 4) {
+        if (!autoScrollInterval) startAutoScroll();
+    } else {
+        if (autoScrollInterval) { clearInterval(autoScrollInterval); autoScrollInterval = null; }
+        grid.scrollLeft = 0;
+        updateLiveCardSizes();
+    }
 }
 
 // ==================== RECORDED URL DETECTOR ====================
@@ -517,77 +652,6 @@ function isRecordedUrl(url) {
         return true; // YouTube recorded video
     }
     return false; // Default: assume live
-}
-
-function updateLiveCard(index, data) {
-    var cards = document.querySelectorAll('.yk-live-card');
-    if (!cards[index]) return;
-
-    var card = cards[index];
-    var thumbImg = card.querySelector('.yk-live-thumb img');
-    var badge = card.querySelector('.yk-live-badge');
-    var nameEl = card.querySelector('.yk-live-name');
-    var timeEl = card.querySelector('.yk-live-time');
-
-    // 🔥 PROXY FIX: Thumbnail proxy se load karein
-    if (data && data.thumbnail && data.thumbnail.length > 10) {
-        thumbImg.src = getProxyImageUrl(data.thumbnail);
-    } else {
-        thumbImg.src = LIVE_CLASSES[index].defaultThumb;
-    }
-
-    // Check endTime: if current time > endTime, class is ended
-    var hasUrl = data && data.url && data.url.length > 5;
-    var isEnded = false;
-
-    if (data && data.endTime) {
-        var now = new Date().getTime();
-        var end = new Date(data.endTime).getTime();
-        if (!isNaN(end) && now > end) {
-            isEnded = true;
-        }
-    }
-    // Also check if ended key is explicitly true
-    if (data && data.hasOwnProperty('ended') && data.ended === true) {
-        isEnded = true;
-    }
-    // If URL is empty, class is ended
-    if (!hasUrl) {
-        isEnded = true;
-    }
-
-    if (isEnded) {
-        // Class ended
-        card.classList.add('upcoming');
-        card.removeAttribute('data-video-url');
-        card.removeAttribute('data-video-title');
-        badge.textContent = 'CLASS ENDED';
-        badge.className = 'yk-live-badge ended';
-        badge.style.background = 'rgba(100,116,139,0.9)';
-        card.style.borderColor = '#334155';
-        card.style.cursor = 'default';
-    } else if (hasUrl) {
-        // LIVE class available
-        card.classList.remove('upcoming');
-        card.setAttribute('data-video-url', data.url);
-        card.setAttribute('data-video-title', LIVE_CLASSES[index].name);
-        badge.textContent = 'LIVE';
-        badge.className = 'yk-live-badge live';
-        card.style.borderColor = '#ef4444';
-        card.style.cursor = 'pointer';
-    } else {
-        // No live class - upcoming
-        card.classList.add('upcoming');
-        card.removeAttribute('data-video-url');
-        card.removeAttribute('data-video-title');
-        badge.textContent = 'UPCOMING';
-        badge.className = 'yk-live-badge upcoming';
-        card.style.borderColor = '#334155';
-        card.style.cursor = 'default';
-    }
-
-    nameEl.textContent = LIVE_CLASSES[index].name;
-    timeEl.textContent = LIVE_CLASSES[index].time;
 }
 
 // ==================== TESTS ====================
@@ -832,6 +896,7 @@ function showPage(pageId) {
     for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
     document.getElementById('page-' + pageId).classList.add('active');
     window.scrollTo(0, 0);
+    updateActiveUserPage(getCurrentPage());
 }
 
 function goBack() {
@@ -850,6 +915,7 @@ function goBack() {
 function openSubject(subject) {
     historyStack.push({ page: 'home', subject: currentSubject, chapter: currentChapter });
     currentSubject = subject; currentChapter = '';
+    updateActiveUserPage('subject-' + subject);
     document.getElementById('subject-title').textContent = subject;
     document.getElementById('subject-chapters').innerHTML = '<div class="yk-loading"><div class="yk-spinner"></div><p>Loading chapters...</p></div>';
     showPage('subject');
@@ -902,6 +968,7 @@ function renderSubjectChapters(subject, filter) {
 function openChapter(chapterName) {
     historyStack.push({ page: 'subject', subject: currentSubject, chapter: currentChapter });
     currentChapter = chapterName;
+    updateActiveUserPage('videos-' + currentSubject + '-' + chapterName);
     document.getElementById('chapter-title').textContent = chapterName;
     document.getElementById('videos-list').innerHTML = '<div class="yk-loading"><div class="yk-spinner"></div><p>Loading content...</p></div>';
     showPage('videos');
@@ -1134,6 +1201,7 @@ function switchTopTab(tab) {
     for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     var activeBtn = document.querySelector('#home-tabs .yk-top-tab[data-tab="' + tab + '"');
     if (activeBtn) activeBtn.classList.add('active');
+    updateActiveUserPage('home-' + tab);
 
     if (tab === 'tests') {
         // Show tests inline on home page - NO navigation away
@@ -1230,19 +1298,30 @@ function attachVideoClicks() {
 }
 
 function attachLiveClicks() {
-    var cards = document.querySelectorAll('.yk-live-card');
-    for (var i = 0; i < cards.length; i++) {
-        cards[i].addEventListener('click', function(e) {
-            var url = this.getAttribute('data-video-url');
-            var title = this.getAttribute('data-video-title');
-            if (url && url.length > 5) {
-                openPlayer(url, title);
+    var grid = document.getElementById('yk-live-grid');
+    if (!grid) return;
+    if (grid._liveClickHandler) grid.removeEventListener('click', grid._liveClickHandler);
+    grid._liveClickHandler = function(e) {
+        var card = e.target.closest('.yk-live-card');
+        if (!card) return;
+        var url = card.getAttribute('data-video-url');
+        var title = card.getAttribute('data-video-title');
+        var status = card.querySelector('.yk-live-badge');
+        var isLive = status && status.classList.contains('live');
+
+        if (url && url.length > 5) {
+            if (isLive) {
+                // 🔥 LIVE CLASS: Page se bahar new tab mein
+                window.open(url, '_blank');
             } else {
-                var name = this.getAttribute('data-live') || title;
-                showLiveAlert(name);
+                // 📹 RECORDED/ENDED: Player iframe mein hi
+                openPlayer(url, title);
             }
-        });
-    }
+        } else {
+            showLiveAlert(card.getAttribute('data-live') || title);
+        }
+    };
+    grid.addEventListener('click', grid._liveClickHandler);
 }
 
 function attachTabClicks() {
@@ -1292,161 +1371,243 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') { closePlayer(); } 
 });
 
-// ==================== INIT ====================
-// ==================== CLOUDFLARE WORKER ACTIVE USER TRACKING ====================
-// Cross-device tracking using Cloudflare Workers + KV
-// Works on mobile + desktop + any browser
-// Unlimited bandwidth, free tier
+// ==================== FIREBASE ACTIVE USER TRACKING ====================
+// Uses SECONDARY Firebase (active-user-f2236)
+// Master key: activeUsers/heartbeatOnOff
 
-var CF_API = 'https://flat-glade-540f.binnerkumar65.workers.dev';
-var currentUserId = null;
-var heartbeatInterval = null;
+var activeUserId = null;
+var activeUserRef = null;
+var heartbeatEnabled = true;
+var heartbeatIntervalId = null;
+var isConnectedToSecondary = false;
+var dbActiveUsers = null;
 
-function initInfinityTracking() {
-    // Generate unique user ID
+// Initialize secondary Firebase for active users
+function initSecondaryFirebase() {
+    try {
+        var activeApp = firebase.initializeApp({
+            databaseURL: "https://active-user-f2236-default-rtdb.firebaseio.com"
+        }, 'activeUsersApp');
+        dbActiveUsers = activeApp.database();
+        console.log('[Firebase] Secondary SDK initialized (Active Users)');
+        return true;
+    } catch(e) {
+        console.error('[Firebase] Secondary init failed:', e);
+        return false;
+    }
+}
+
+// Listen for admin toggle
+function initHeartbeatToggle() {
+    if (!dbActiveUsers) {
+        console.log('[ActiveUsers] Secondary DB not ready');
+        return;
+    }
+    var toggleRef = dbActiveUsers.ref('activeUsers/heartbeatOnOff');
+    toggleRef.on('value', function(snapshot) {
+        var val = snapshot.val();
+        if (val === false) {
+            heartbeatEnabled = false;
+            disconnectFromSecondary();
+        } else {
+            heartbeatEnabled = true;
+            if (!isConnectedToSecondary) connectToSecondary();
+        }
+    });
+}
+
+// Connect to secondary
+function connectToSecondary() {
+    if (!dbActiveUsers || isConnectedToSecondary) return;
+
     var timestamp = new Date().getTime();
     var random = Math.random().toString(36).substring(2, 10);
-    currentUserId = 'user_' + timestamp + '_' + random;
+    activeUserId = 'user_' + timestamp + '_' + random;
 
-    // Detect device info
     var ua = navigator.userAgent;
     var browser = 'Unknown';
     var device = 'Desktop';
     if (ua.indexOf('Chrome') > -1) browser = 'Chrome';
     else if (ua.indexOf('Firefox') > -1) browser = 'Firefox';
     else if (ua.indexOf('Safari') > -1) browser = 'Safari';
-    else if (ua.indexOf('Edge') > -1) browser = 'Edge';
+    else if (ua.indexOf('Edg') > -1) browser = 'Edge';
     if (/Android/.test(ua)) device = 'Android';
     else if (/iPhone|iPad|iPod/.test(ua)) device = 'iOS';
 
+    activeUserRef = dbActiveUsers.ref('activeUsers/' + activeUserId);
+
+    var now = new Date().getTime();
     var userData = {
-        userId: currentUserId,
+        userId: activeUserId,
         browser: browser,
         device: device,
         screen: window.screen.width + 'x' + window.screen.height,
-        page: 'home',
-        startTime: timestamp,
-        lastSeen: timestamp
+        page: getCurrentPage(),
+        joinedAt: now,
+        joinedAtFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
+        lastSeen: now,
+        lastSeenFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })
     };
 
-    // Register user IMMEDIATELY (no delay)
-    registerUser(userData);
-    console.log('[Cloudflare] User registered:', currentUserId);
-
-    // Heartbeat every 10 seconds (faster update)
-    heartbeatInterval = setInterval(function() {
-        userData.lastSeen = new Date().getTime();
-        userData.page = getCurrentPage();
-        updateUser(userData);
-    }, 60000); // 60 sec = 1 minute
-
-    // Handle page visibility change (tab switch/minimize)
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'hidden') {
-            // Page hidden - update lastSeen and reduce heartbeat
-            userData.lastSeen = new Date().getTime();
-            updateUser(userData);
-        } else {
-            // Page visible again - update immediately
-            userData.lastSeen = new Date().getTime();
-            userData.page = getCurrentPage();
-            updateUser(userData);
-        }
-    });
-
-    // Remove user on page close (multiple methods for reliability)
-    var removeOnExit = function() {
-        removeUser(currentUserId);
-        if (heartbeatInterval) {
-            clearInterval(heartbeatInterval);
-        }
-    };
-
-    window.addEventListener('beforeunload', removeOnExit);
-    window.addEventListener('pagehide', removeOnExit);
-    window.addEventListener('unload', removeOnExit);
-
-    // Also remove on mobile back button
-    window.addEventListener('popstate', removeOnExit);
-}
-
-function registerUser(userData) {
-    fetch(CF_API + '/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-    }).then(function(res) {
-        if (res.ok) {
-            console.log('[Cloudflare] User registered successfully');
-        } else {
-            console.log('[Cloudflare] Register failed:', res.status);
-        }
-    }).catch(function(e) {
-        console.log('[Cloudflare] Register error:', e);
+    activeUserRef.onDisconnect().remove();
+    activeUserRef.set(userData).then(function() {
+        isConnectedToSecondary = true;
+        console.log('[ActiveUsers] CONNECTED:', activeUserId);
+        startHeartbeat();
+    }).catch(function(err) {
+        console.log('[ActiveUsers] Connection error:', err);
     });
 }
 
-function updateUser(userData) {
-    fetch(CF_API + '/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-    }).catch(function(e) {
-        console.log('[Cloudflare] Update error:', e);
+// Disconnect
+function disconnectFromSecondary() {
+    if (!isConnectedToSecondary) return;
+    if (heartbeatIntervalId) {
+        clearInterval(heartbeatIntervalId);
+        heartbeatIntervalId = null;
+    }
+    if (activeUserRef) {
+        activeUserRef.remove();
+        activeUserRef = null;
+    }
+    activeUserId = null;
+    isConnectedToSecondary = false;
+    console.log('[ActiveUsers] DISCONNECTED');
+}
+
+// Heartbeat every 60 seconds
+function startHeartbeat() {
+    if (heartbeatIntervalId) clearInterval(heartbeatIntervalId);
+    heartbeatIntervalId = setInterval(function() {
+        if (!heartbeatEnabled || !isConnectedToSecondary || !activeUserRef) return;
+        var now = new Date().getTime();
+        activeUserRef.update({
+            lastSeen: now,
+            lastSeenFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
+            page: getCurrentPage()
+        }).then(function() {
+            console.log('[ActiveUsers] Heartbeat sent');
+        }).catch(function(err) {
+            console.log('[ActiveUsers] Heartbeat error:', err);
+        });
+    }, 60000);
+}
+
+// Update page tracking
+function updateActiveUserPage(page) {
+    if (!isConnectedToSecondary || !activeUserRef || !heartbeatEnabled) return;
+    var now = new Date().getTime();
+    activeUserRef.update({
+        page: page,
+        lastSeen: now,
+        lastSeenFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })
+    }).then(function() {
+        console.log('[ActiveUsers] Page updated:', page);
+    }).catch(function(err) {
+        console.log('[ActiveUsers] Page update error:', err);
     });
 }
 
-function removeUser(userId) {
-    navigator.sendBeacon(CF_API + '/remove?userId=' + userId);
-}
-
+// Get current page
 function getCurrentPage() {
     var pages = document.querySelectorAll('.yk-page.active');
     if (pages.length > 0) {
-        return pages[0].id.replace('page-', '');
+        var pageId = pages[0].id;
+        if (pageId === 'page-home') {
+            var activeTab = document.querySelector('#home-tabs .yk-top-tab.active');
+            if (activeTab) return 'home-' + activeTab.getAttribute('data-tab');
+            return 'home';
+        }
+        if (pageId === 'page-subject') return 'subject-' + (currentSubject || 'unknown');
+        if (pageId === 'page-videos') return 'videos-' + (currentSubject || '') + '-' + (currentChapter || '');
+        return pageId.replace('page-', '');
     }
     return 'home';
 }
 
-// Admin function to view all active users (cross-device)
-window.getActiveUsers = function() {
-    fetch(CF_API + '/users')
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            console.log('=== ACTIVE USERS (All Devices) ===');
-            console.log('Total:', data.count);
-            console.table(data.users);
-            return data;
-        })
-        .catch(function(e) {
-            console.log('[Cloudflare] Fetch error:', e);
-        });
+// Init tracking
+function initActiveUserTracking() {
+    if (!dbActiveUsers) return;
+    var toggleRef = dbActiveUsers.ref('activeUsers/heartbeatOnOff');
+    toggleRef.once('value').then(function(snapshot) {
+        if (snapshot.val() !== false) connectToSecondary();
+        else console.log('[ActiveUsers] Master key OFF');
+    });
+}
+
+// Admin toggle
+window.toggleHeartbeat = function(state) {
+    if (!dbActiveUsers) return;
+    dbActiveUsers.ref('activeUsers/heartbeatOnOff').set(state === true);
 };
 
+// Admin get users
+window.getActiveUsers = function() {
+    if (!dbActiveUsers) return;
+    dbActiveUsers.ref('activeUsers').once('value').then(function(snapshot) {
+        var data = snapshot.val();
+        var users = [], count = 0;
+        if (data) {
+            for (var key in data) {
+                if (key === 'heartbeatOnOff') continue;
+                var user = data[key];
+                if (user.lastSeen) user.lastSeenReadable = new Date(user.lastSeen).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+                if (user.joinedAt) user.joinedAtReadable = new Date(user.joinedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+                users.push(user);
+                count++;
+            }
+        }
+        console.log('=== ACTIVE USERS ===');
+        console.log('Total:', count);
+        console.log('Time:', new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }));
+        console.table(users);
+    });
+};
+
+window.addEventListener('beforeunload', function() {
+    if (activeUserRef) activeUserRef.remove();
+});
+
+// ==================== INIT ====================
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', function() {
     // Step 1: Init Firebase
     initFirebase();
 
-    // Step 2: Auto-create keys (physics-live, chemistry-live, biology-live, tests)
+    // Step 2: Init Secondary Firebase (Active Users)
+    initSecondaryFirebase();
+
+    // Step 3: Auto-create keys
     autoCreateKeys();
 
-    // Step 3: Start live class listeners
+    // Step 4: Start live class listeners
     initLiveClasses();
 
-    // Step 4: Start InfinityFree live user tracking (Firebase nahi)
-    initInfinityTracking();
+    // Step 5: Start Active User Tracking
+    initActiveUserTracking();
 
-    // Step 5: Attach all event listeners
+    // Step 6: Listen for admin heartbeat toggle
+    initHeartbeatToggle();
+
+    // Step 7: Attach all event listeners
     attachSubjectClicks();
     attachLiveClicks();
     attachTabClicks();
     attachBackButtons();
     attachPlayerControls();
 
+    // Step 8: Init live grid swipe and clicks
+    initLiveSwipe();
+    attachLiveClicks();
+    checkLiveOverflow();
+
+    window.addEventListener('resize', function() {
+        checkLiveOverflow();
+    });
+
     console.log('Yakeen NEET App initialized');
-    console.log('Auto-creating keys: physics-live, chemistry-live, biology-live, tests');
-    console.log('Live user tracking active');
+    console.log('Dynamic live classes: ALL from Firebase');
+    console.log('Firebase Secondary Active User tracking active');
 });
 
 })();
