@@ -22,7 +22,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-top-tab{flex:1;min-width:100px;padding:14px 16px;background:none;border:none;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;position:relative;white-space:nowrap;text-align:center}
 .yk-top-tab.active{color:#38bdf8;font-weight:700}
 .yk-top-tab.active::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:2.5px;background:#38bdf8;border-radius:2px}
-.yk-live-section{padding:20px 20px 28px;border-bottom:1px solid #1e293b;margin-bottom:8px;transition:all 0.3s ease}
+.yk-live-section{padding:20px 0 28px;border-bottom:1px solid #1e293b;margin-bottom:8px;transition:all 0.3s ease;position:relative}
 .yk-live-section.hidden{display:none !important}
 #home-subjects{transition:all 0.3s ease}
 #home-subjects.hidden{display:none !important}
@@ -31,10 +31,10 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-live-title{font-size:15px;font-weight:700;color:#f8fafc;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .yk-live-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;animation:pulse 1.5s infinite}
 @keyframes pulse{0%{opacity:1}50%{opacity:0.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-.yk-live-grid{display:flex;flex-wrap:nowrap;gap:12px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;touch-action:pan-x}
+.yk-live-grid{display:flex;flex-wrap:nowrap;gap:12px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x mandatory;scroll-padding:0 48px;padding:0 48px 8px 48px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x;position:relative;justify-content:flex-start;align-items:stretch}
 .yk-live-grid::-webkit-scrollbar{display:none!important}
 .yk-live-grid:active{cursor:grabbing}
-.yk-live-card{flex:0 0 260px;min-width:260px;max-width:260px;width:260px;scroll-snap-align:start;box-sizing:border-box}
+.yk-live-card{flex:0 0 240px;min-width:240px;max-width:240px;width:240px;scroll-snap-align:center;scroll-snap-stop:always;box-sizing:border-box}
 .yk-live-card{background:#1e293b;border-radius:14px;overflow:hidden;border:1px solid #334155;cursor:pointer;transition:all 0.3s}
 .yk-live-card:hover{border-color:#ef4444;transform:translateY(-3px)}
 .yk-live-card.upcoming{border-color:#334155 !important;cursor:default !important}
@@ -147,7 +147,8 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-player-box:fullscreen #iframe-player{height:100vh}
 
 @media(max-width:768px){
-.yk-live-card{flex:0 0 200px;min-width:200px;max-width:200px;width:200px}
+.yk-live-grid{padding:0 40px 8px 40px;justify-content:center}
+.yk-live-card{flex:0 0 200px;min-width:200px;max-width:200px;width:200px;scroll-snap-align:center;scroll-snap-stop:always}
 .yk-live-info{padding:8px}
 .yk-live-name{font-size:11px}
 .yk-live-time{font-size:9px}
@@ -155,7 +156,8 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-video-thumb{width:150px;height:95px}
 }
 @media(max-width:480px){
-.yk-live-card{flex:0 0 160px;min-width:160px;max-width:160px;width:160px}
+.yk-live-grid{padding:0 36px 8px 36px;scroll-padding:0 36px;justify-content:flex-start}
+.yk-live-card{flex:0 0 160px;min-width:160px;max-width:160px;width:160px;scroll-snap-align:center;scroll-snap-stop:always}
 .yk-live-section{padding:12px}
 .yk-video-thumb{width:110px;height:75px}
 .yk-video-title{font-size:13px}
@@ -176,7 +178,26 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-online-text{font-size:11px;font-weight:600;color:#94a3b8}
 .yk-online-count{font-size:12px;font-weight:800;color:#38bdf8;min-width:36px;text-align:right}
 @keyframes ykBlink{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
+
+/* ===== SLIDE NAVIGATION BUTTONS ===== */
+.yk-live-section{position:relative}
+.yk-slide-btn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(15,23,42,0.95);border:2px solid #38bdf8;color:#38bdf8;font-size:22px;font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20;transition:all 0.2s;backdrop-filter:blur(6px);box-shadow:0 4px 15px rgba(0,0,0,0.4)}
+.yk-slide-btn:hover{background:#1e293b;border-color:#38bdf8;color:#f8fafc;transform:translateY(-50%) scale(1.1)}
+.yk-slide-btn.prev{left:10px}
+.yk-slide-btn.next{right:10px}
+.yk-slide-btn.hidden{display:none !important}
+@media(max-width:768px){
+.yk-slide-btn{width:36px;height:36px;font-size:18px}
+.yk-slide-btn.prev{left:6px}
+.yk-slide-btn.next{right:6px}
+}
+@media(max-width:480px){
+.yk-slide-btn{width:32px;height:32px;font-size:16px}
+.yk-slide-btn.prev{left:4px}
+.yk-slide-btn.next{right:4px}
+}
 </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -206,6 +227,8 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 
 <div class="yk-live-section" id="live-section">
 <div class="yk-live-title"><div class="yk-live-dot"></div>Live Classes</div>
+<button class="yk-slide-btn prev" id="yk-slide-prev">&#10094;</button>
+<button class="yk-slide-btn next" id="yk-slide-next">&#10095;</button>
 <div class="yk-live-grid" id="yk-live-grid">
 <div class="yk-loading" id="live-loading" style="padding:20px;text-align:center;width:100%;"><div class="yk-spinner"></div><p>Loading live classes...</p></div>
 </div>
@@ -345,7 +368,7 @@ function getProxyImageUrl(originalUrl) {
 
 // ==================== CONFIG ====================
 var FIREBASE_CONFIG = {
-    databaseURL: "https://sandeep-a3120-default-rtdb.firebaseio.com"
+    databaseURL: "https://apnaclass-d5b1e-default-rtdb.firebaseio.com"
 };
 
 // ==================== LIVE CLASSES CONFIG ====================
@@ -570,189 +593,50 @@ function updateLiveCardSizes() {
 }
 
 function startAutoScroll() {
-    // Cleanup
-    if (autoScrollInterval) {
-        cancelAnimationFrame(autoScrollInterval);
-        autoScrollInterval = null;
-    }
-    var oldStyle = document.getElementById('yk-marquee-style');
-    if (oldStyle) oldStyle.remove();
-
+    // Auto-slide disabled - manual buttons only
     var grid = document.querySelector('.yk-live-grid');
     if (!grid) return;
-
-    // Remove old clones
+    // Remove any existing clones
     var oldClones = grid.querySelectorAll('.yk-live-card.yk-clone');
     for (var c = 0; c < oldClones.length; c++) {
         oldClones[c].remove();
     }
     grid.style.animation = '';
     grid.style.transform = '';
-
-    var cards = grid.querySelectorAll('.yk-live-card:not(.yk-clone)');
-    if (cards.length <= 1) {
-        console.log('[AutoScroll] Need > 1 cards');
-        return;
-    }
-
-    var cardWidth = cards[0].offsetWidth + 12;
-    var totalOriginal = cards.length;
-    var oneSetWidth = totalOriginal * cardWidth;
-
-    // Store for swipe
-    grid._cardWidth = cardWidth;
-    grid._totalOriginal = totalOriginal;
-    grid._oneSetWidth = oneSetWidth;
-
-    // Clone 2 sets
-    for (var s = 0; s < 2; s++) {
-        for (var i = 0; i < totalOriginal; i++) {
-            var clone = cards[i].cloneNode(true);
-            clone.classList.add('yk-clone');
-            clone.style.pointerEvents = 'none';
-            clone.style.flexShrink = '0';
-            grid.appendChild(clone);
-        }
-    }
-
-    // CSS animation
-    var duration = Math.max(totalOriginal * 2.5, 10);
-    var style = document.createElement('style');
-    style.id = 'yk-marquee-style';
-    style.textContent =
-        '.yk-live-grid { ' +
-        'animation: ykMarquee ' + duration + 's linear infinite; ' +
-        'width: max-content !important; ' +
-        'cursor: grab; ' +
-        '} ' +
-        '@keyframes ykMarquee { ' +
-        '0% { transform: translateX(0); } ' +
-        '100% { transform: translateX(-' + oneSetWidth + 'px); } ' +
-        '} ' +
-        '.yk-live-grid.paused { animation-play-state: paused !important; } ' +
-        '.yk-live-grid.dragging { cursor: grabbing !important; animation-play-state: paused !important; }';
-    document.head.appendChild(style);
-
-    console.log('[AutoScroll] Marquee: ' + duration + 's, width: ' + oneSetWidth + 'px');
+    var oldStyle = document.getElementById('yk-marquee-style');
+    if (oldStyle) oldStyle.remove();
+    console.log('[AutoScroll] Disabled - manual navigation');
 }
 
 function pauseMarquee() {
-    var grid = document.querySelector('.yk-live-grid');
-    if (grid) grid.classList.add('paused');
+    // Disabled - manual navigation
 }
 
 function resumeMarquee() {
-    var grid = document.querySelector('.yk-live-grid');
-    if (grid) grid.classList.remove('paused');
+    // Disabled - manual navigation
 }
 
 function initLiveSwipe() {
-    var grid = document.querySelector('.yk-live-grid');
-    if (!grid) return;
-
-    var startX = 0;
-    var currentX = 0;
-    var isDragging = false;
-    var startTransform = 0;
-
-    function getTransformX() {
-        var style = window.getComputedStyle(grid);
-        var matrix = new WebKitCSSMatrix(style.transform);
-        return matrix.m41;
-    }
-
-    function setTransformX(x) {
-        grid.style.animation = 'none';
-        grid.style.transform = 'translateX(' + x + 'px)';
-    }
-
-    function resumeAnimation() {
-        grid.style.transform = '';
-        grid.style.animation = '';
-        grid.classList.remove('dragging');
-    }
-
-    // TOUCH events
-    grid.addEventListener('touchstart', function(e) {
-        isDragging = true;
-        grid.classList.add('dragging');
-        startX = e.touches[0].clientX;
-        startTransform = getTransformX();
-    }, { passive: true });
-
-    grid.addEventListener('touchmove', function(e) {
-        if (!isDragging) return;
-        var diff = e.touches[0].clientX - startX;
-        var newX = startTransform + diff;
-
-        // Loop handling
-        var oneSet = grid._oneSetWidth || 1000;
-        if (newX > 0) newX = newX - oneSet;
-        if (newX < -oneSet) newX = newX + oneSet;
-
-        setTransformX(newX);
-    }, { passive: true });
-
-    grid.addEventListener('touchend', function() {
-        isDragging = false;
-        grid.classList.remove('dragging');
-        setTimeout(resumeAnimation, 2000);
-    });
-
-    // MOUSE events (for desktop drag)
-    grid.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        grid.classList.add('dragging');
-        startX = e.clientX;
-        startTransform = getTransformX();
-        e.preventDefault();
-    });
-
-    grid.addEventListener('mousemove', function(e) {
-        if (!isDragging) return;
-        var diff = e.clientX - startX;
-        var newX = startTransform + diff;
-
-        var oneSet = grid._oneSetWidth || 1000;
-        if (newX > 0) newX = newX - oneSet;
-        if (newX < -oneSet) newX = newX + oneSet;
-
-        setTransformX(newX);
-    });
-
-    grid.addEventListener('mouseup', function() {
-        isDragging = false;
-        grid.classList.remove('dragging');
-        setTimeout(resumeAnimation, 2000);
-    });
-
-    grid.addEventListener('mouseleave', function() {
-        if (isDragging) {
-            isDragging = false;
-            grid.classList.remove('dragging');
-            setTimeout(resumeAnimation, 2000);
-        }
-    });
+    // Swipe/drag disabled - use arrow buttons instead
+    console.log('[LiveSwipe] Disabled - arrow button navigation');
 }
 
 function checkLiveOverflow() {
     var grid = document.querySelector('.yk-live-grid');
     if (!grid) return;
-
-    var cards = grid.querySelectorAll('.yk-live-card:not(.yk-clone)');
-    console.log('[CheckOverflow] Cards:', cards.length);
-
-    if (cards.length > 1) {
-        startAutoScroll();
-    } else {
-        var oldStyle = document.getElementById('yk-marquee-style');
-        if (oldStyle) oldStyle.remove();
-        grid.style.animation = '';
-        grid.style.transform = '';
-        var cloned = grid.querySelectorAll('.yk-live-card.yk-clone');
-        for (var c = 0; c < cloned.length; c++) cloned[c].remove();
-        grid.scrollLeft = 0;
-    }
+    // Cleanup clones and animation
+    var oldClones = grid.querySelectorAll('.yk-live-card.yk-clone');
+    for (var c = 0; c < oldClones.length; c++) oldClones[c].remove();
+    grid.style.animation = '';
+    grid.style.transform = '';
+    var oldStyle = document.getElementById('yk-marquee-style');
+    if (oldStyle) oldStyle.remove();
+    // Show/hide arrow buttons based on overflow
+    updateSlideButtons();
+    // Restart auto-slide after cards render
+    stopAutoSlide();
+    startAutoSlide();
+    console.log('[CheckOverflow] Auto-slide mode active');
 }
 
 // ==================== RECORDED URL DETECTOR ====================
@@ -1436,23 +1320,19 @@ function attachLiveClicks() {
     if (!grid) return;
     if (grid._liveClickHandler) grid.removeEventListener('click', grid._liveClickHandler);
     grid._liveClickHandler = function(e) {
-        // Ignore if dragging
-        if (grid.classList.contains('dragging')) return;
+        // Ignore button clicks
+        if (e.target.closest('.yk-slide-btn')) return;
         var card = e.target.closest('.yk-live-card');
         if (!card || card.classList.contains('yk-clone')) return;
         var url = card.getAttribute('data-video-url');
-        var title = card.getAttribute('data-video-title');
+        var title = card.getAttribute('data-video-title') || card.getAttribute('data-live');
         var status = card.querySelector('.yk-live-badge');
         var isLive = status && status.classList.contains('live');
 
-        if (url && url.length > 5) {
-            if (isLive) {
-                window.open(url, '_blank');
-            } else {
-                openPlayer(url, title);
-            }
+        if (isLive && url && url.length > 5) {
+            window.open(url, '_blank');
         } else {
-            showLiveAlert(card.getAttribute('data-live') || title);
+            alert('Class Ended');
         }
     };
     grid.addEventListener('click', grid._liveClickHandler);
@@ -1520,7 +1400,7 @@ var dbActiveUsers = null;
 function initSecondaryFirebase() {
     try {
         var activeApp = firebase.initializeApp({
-            databaseURL: "https://active-user-f2236-default-rtdb.firebaseio.com"
+            databaseURL: "https://neetclass2-9108d-default-rtdb.firebaseio.com"
         }, 'activeUsersApp');
         dbActiveUsers = activeApp.database();
         console.log('[Firebase] Secondary SDK initialized (Active Users)');
@@ -1554,9 +1434,19 @@ function initHeartbeatToggle() {
 function connectToSecondary() {
     if (!dbActiveUsers || isConnectedToSecondary) return;
 
-    var timestamp = new Date().getTime();
-    var random = Math.random().toString(36).substring(2, 10);
-    activeUserId = 'user_' + timestamp + '_' + random;
+    // Check if we already have a stored userId in localStorage
+    var storedUserId = localStorage.getItem('yk_active_user_id');
+    if (storedUserId) {
+        activeUserId = storedUserId;
+        console.log('[ActiveUsers] Reusing stored ID:', activeUserId);
+    } else {
+        // Generate new ID only if not stored
+        var timestamp = new Date().getTime();
+        var random = Math.random().toString(36).substring(2, 10);
+        activeUserId = 'user_' + timestamp + '_' + random;
+        localStorage.setItem('yk_active_user_id', activeUserId);
+        console.log('[ActiveUsers] New ID generated:', activeUserId);
+    }
 
     var ua = navigator.userAgent;
     var browser = 'Unknown';
@@ -1604,9 +1494,9 @@ function disconnectFromSecondary() {
         activeUserRef.remove();
         activeUserRef = null;
     }
-    activeUserId = null;
+    // DO NOT clear activeUserId from localStorage - it should persist
     isConnectedToSecondary = false;
-    console.log('[ActiveUsers] DISCONNECTED');
+    console.log('[ActiveUsers] DISCONNECTED (ID preserved in localStorage)');
 }
 
 // Heartbeat every 60 seconds
@@ -1744,9 +1634,203 @@ function initFakeOnlineCounter() {
     }, 4000 + Math.floor(Math.random() * 4000));
 }
 
+// ==================== DAILY UNIQUE DEVICE COUNTER ====================
+// Har device ko din mein sirf 1 baar count karta hai (Firebase 2 - active-user-f2236 mein)
+// Raat 12 baje (IST) purani date ka data automatically delete ho jata hai
+
+function getDeviceId() {
+    var id = localStorage.getItem('yk_device_id');
+    if (!id) {
+        id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 12);
+        localStorage.setItem('yk_device_id', id);
+    }
+    return id;
+}
+
+function getTodayKey() {
+    var now = new Date();
+    var istString = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    var istDate = new Date(istString);
+    var y = istDate.getFullYear();
+    var m = String(istDate.getMonth() + 1).padStart(2, '0');
+    var d = String(istDate.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+}
+
+function trackDailyUniqueVisitor() {
+    if (!dbActiveUsers) {
+        setTimeout(trackDailyUniqueVisitor, 2000);
+        return;
+    }
+    var deviceId = getDeviceId();
+    var todayKey = getTodayKey();
+    var deviceRef = dbActiveUsers.ref('dailyVisitors/' + todayKey + '/devices/' + deviceId);
+
+    deviceRef.once('value').then(function(snapshot) {
+        if (snapshot.exists()) {
+            console.log('[DailyVisitor] Aaj already count ho chuka:', deviceId);
+            listenDailyCount(todayKey);
+            return;
+        }
+        // Naya device — mark karo aur count badhao
+        deviceRef.set(true).then(function() {
+            var countRef = dbActiveUsers.ref('dailyVisitors/' + todayKey + '/count');
+            countRef.transaction(function(current) {
+                return (current || 0) + 1;
+            });
+            console.log('[DailyVisitor] Naya device count hua:', deviceId);
+            listenDailyCount(todayKey);
+        });
+    }).catch(function(err) {
+        console.log('[DailyVisitor] Error:', err);
+    });
+
+    cleanupOldDailyVisitors(todayKey);
+}
+
+function listenDailyCount(todayKey) {
+    dbActiveUsers.ref('dailyVisitors/' + todayKey + '/count').on('value', function(snapshot) {
+        var count = snapshot.val() || 0;
+        console.log('[DailyVisitor] Aaj ka total unique devices:', count);
+        // Agar UI mein dikhana ho, e.g.:
+        // document.getElementById('daily-count').textContent = count;
+    });
+}
+
+function cleanupOldDailyVisitors(todayKey) {
+    dbActiveUsers.ref('dailyVisitors').once('value').then(function(snapshot) {
+        var data = snapshot.val();
+        if (!data) return;
+        for (var dateKey in data) {
+            if (dateKey !== todayKey) {
+                dbActiveUsers.ref('dailyVisitors/' + dateKey).remove();
+                console.log('[DailyVisitor] Purani date delete hui:', dateKey);
+            }
+        }
+    });
+}
+
+// Agar tab raat bhar khula reh gaya ho, to bhi date change detect ho jaye
+var lastCheckedDailyDate = getTodayKey();
+setInterval(function() {
+    var currentDate = getTodayKey();
+    if (currentDate !== lastCheckedDailyDate) {
+        lastCheckedDailyDate = currentDate;
+        trackDailyUniqueVisitor();
+    }
+}, 60000);
+
 // ==================== INIT ====================
-// ==================== INIT ====================
+
+// ==================== AUTO SLIDE ====================
+var autoSlideInterval = null;
+var AUTO_SLIDE_DELAY = 3000; // 3 seconds between slides
+var isAutoSliding = true;
+
+function startAutoSlide() {
+    if (autoSlideInterval) clearInterval(autoSlideInterval);
+    autoSlideInterval = setInterval(function() {
+        if (!isAutoSliding) return;
+        var grid = document.getElementById('yk-live-grid');
+        if (!grid) return;
+
+        var maxScroll = grid.scrollWidth - grid.clientWidth;
+        var cardWidth = 252; // matches SLIDE_SCROLL_AMOUNT
+
+        // If near end, scroll back to start
+        if (grid.scrollLeft >= maxScroll - 10) {
+            grid.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            grid.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        }
+
+        // Update button visibility after scroll
+        setTimeout(updateSlideButtons, 350);
+    }, AUTO_SLIDE_DELAY);
+}
+
+function stopAutoSlide() {
+    if (autoSlideInterval) {
+        clearInterval(autoSlideInterval);
+        autoSlideInterval = null;
+    }
+}
+
+function pauseAutoSlide() {
+    isAutoSliding = false;
+}
+
+function resumeAutoSlide() {
+    isAutoSliding = true;
+}
+
+// ==================== SLIDE BUTTON NAVIGATION ====================
+var SLIDE_SCROLL_AMOUNT = 252;
+
+function initSlideButtons() {
+    var prevBtn = document.getElementById('yk-slide-prev');
+    var nextBtn = document.getElementById('yk-slide-next');
+    var grid = document.getElementById('yk-live-grid');
+    if (!prevBtn || !nextBtn || !grid) return;
+
+    prevBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        pauseAutoSlide();
+        grid.scrollBy({ left: -SLIDE_SCROLL_AMOUNT, behavior: 'smooth' });
+        setTimeout(resumeAutoSlide, 5000); // resume after 5s
+    });
+
+    nextBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        pauseAutoSlide();
+        grid.scrollBy({ left: SLIDE_SCROLL_AMOUNT, behavior: 'smooth' });
+        setTimeout(resumeAutoSlide, 5000); // resume after 5s
+    });
+
+    // Pause auto-slide on hover/touch
+    grid.addEventListener('mouseenter', pauseAutoSlide);
+    grid.addEventListener('mouseleave', resumeAutoSlide);
+    grid.addEventListener('touchstart', pauseAutoSlide, { passive: true });
+    grid.addEventListener('touchend', function() {
+        setTimeout(resumeAutoSlide, 3000);
+    }, { passive: true });
+
+    // Show/hide buttons on scroll
+    grid.addEventListener('scroll', function() {
+        updateSlideButtons();
+    });
+
+    updateSlideButtons();
+    startAutoSlide(); // Start auto-slide
+}
+
+function updateSlideButtons() {
+    var grid = document.getElementById('yk-live-grid');
+    var prevBtn = document.getElementById('yk-slide-prev');
+    var nextBtn = document.getElementById('yk-slide-next');
+    if (!grid || !prevBtn || !nextBtn) return;
+
+    var maxScroll = grid.scrollWidth - grid.clientWidth;
+
+    // Hide prev if at start
+    if (grid.scrollLeft <= 5) {
+        prevBtn.classList.add('hidden');
+    } else {
+        prevBtn.classList.remove('hidden');
+    }
+
+    // Hide next if at end
+    if (maxScroll <= 5 || grid.scrollLeft >= maxScroll - 5) {
+        nextBtn.classList.add('hidden');
+    } else {
+        nextBtn.classList.remove('hidden');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Step 0: Init slide buttons
+    initSlideButtons();
+
     // Step 1: Init Firebase
     initFirebase();
 
@@ -1777,8 +1861,15 @@ document.addEventListener('DOMContentLoaded', function() {
     attachLiveClicks();
     // Auto slide starts automatically when cards > 4
 
+    // Step 9: Start fake online counter
+    initFakeOnlineCounter();
+
+    // Step 10: Track daily unique device visits (Firebase 2, resets at midnight IST)
+    trackDailyUniqueVisitor();
+
     window.addEventListener('resize', function() {
         checkLiveOverflow();
+        updateSlideButtons();
     });
 
     console.log('Yakeen NEET App initialized');
