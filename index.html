@@ -172,11 +172,11 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 .yk-name{font-size:14px}
 }
 
-/* ===== FAKE ONLINE USER COUNTER ===== */
+/* ===== DAILY DEVICE COUNTER ===== */
 .yk-online-counter{display:inline-flex;align-items:center;gap:6px;margin-left:auto;padding:4px 10px;background:rgba(30,41,59,0.8);border:1px solid #334155;border-radius:8px}
 .yk-online-dot{width:7px;height:7px;background:#10b981;border-radius:50%;animation:ykBlink 1.5s infinite}
 .yk-online-text{font-size:11px;font-weight:600;color:#94a3b8}
-.yk-online-count{font-size:12px;font-weight:800;color:#38bdf8;min-width:36px;text-align:right}
+.yk-online-count{font-size:12px;font-weight:800;color:#38bdf8;min-width:20px;text-align:right}
 @keyframes ykBlink{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
 
 /* ===== SLIDE NAVIGATION BUTTONS ===== */
@@ -351,12 +351,6 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 }
 </style>
 <base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
 <div id="yk-app">
@@ -368,7 +362,7 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 <div class="yk-title">Yakeen NEET 2.O 2027</div>
 <div class="yk-online-counter" id="yk-online-counter">
 <div class="yk-online-dot"></div>
-<div class="yk-online-text">Online:</div>
+<div class="yk-online-text">online:</div>
 <div class="yk-online-count" id="yk-online-count">--</div>
 </div>
 </div>
@@ -499,24 +493,17 @@ html,body{font-family:'Inter',sans-serif;background:#0a0e1a;color:#e2e8f0;min-he
 'use strict';
 
 // ==================== IMAGE PROXY HELPER (ANTI-BLOCK) ====================
-// Yeh function kisi bhi blocked image URL ko proxy se load karega
 function getProxyImageUrl(originalUrl) {
     if (!originalUrl || originalUrl.length < 5) return '';
-
-    // Agar already safe/proxy URL hai, toh waisa hi rahe
     if (originalUrl.indexOf('placehold.co') !== -1 || 
         originalUrl.indexOf('img.youtube.com') !== -1 ||
         originalUrl.indexOf('i.ytimg.com') !== -1 ||
         originalUrl.indexOf('images.weserv.nl') !== -1) {
         return originalUrl;
     }
-
-    // Agar already HTTPS nahi hai, toh HTTPS bana dein
     if (originalUrl.indexOf('http://') === 0) {
         originalUrl = originalUrl.replace('http://', 'https://');
     }
-
-    // Free image proxy - yeh blocked images ko bypass karega
     return 'https://images.weserv.nl/?url=' + encodeURIComponent(originalUrl) + '&n=-1&w=400&h=225';
 }
 
@@ -525,17 +512,14 @@ var FIREBASE_CONFIG = {
     databaseURL: "https://neetjee-ca8f5-default-rtdb.firebaseio.com"
 };
 
-// ==================== LIVE CLASSES CONFIG ====================
-var LIVE_CLASSES = []; // All cards from Firebase dynamically
+var LIVE_CLASSES = [];
 
-// ==================== GLOBALS ====================
 var allData = null;
 var currentSubject = '';
 var currentChapter = '';
 var historyStack = [];
 var db = null;
 
-// ==================== INIT FIREBASE ====================
 function initFirebase() {
     try {
         firebase.initializeApp(FIREBASE_CONFIG);
@@ -548,114 +532,52 @@ function initFirebase() {
     }
 }
 
-// ==================== AUTO-CREATE KEYS ====================
 function autoCreateKeys() {
     if (!db) {
-        console.log('[AutoKey] Firebase not ready, retrying...');
         setTimeout(autoCreateKeys, 2000);
         return;
     }
-
-    console.log('[AutoKey] Creating live class keys...');
-
     LIVE_CLASSES.forEach(function(liveClass) {
         var ref = db.ref('liveClasses/' + liveClass.key);
-
-        // Check if key exists, if not create empty one
         ref.once('value').then(function(snapshot) {
             if (!snapshot.exists()) {
-                // Key does not exist - create empty structure
                 ref.set({
                     url: "",
                     thumbnail: "",
                     created: firebase.database.ServerValue.TIMESTAMP,
                     ended: false
-                    // NOTE: 'endTime' is set manually in Firebase console
-                    // Format: "2026-07-08T15:30:00+05:30" (ISO 8601)
-                }).then(function() {
-                    console.log('[AutoKey] Created: ' + liveClass.key);
-                }).catch(function(err) {
-                    console.log('[AutoKey] Error creating ' + liveClass.key + ':', err);
                 });
-            } else {
-                console.log('[AutoKey] Already exists: ' + liveClass.key);
             }
-        }).catch(function(err) {
-            console.log('[AutoKey] Check error for ' + liveClass.key + ':', err);
         });
     });
-
-    // Also create tests key
     var testsRef = db.ref('tests');
     testsRef.once('value').then(function(snapshot) {
         if (!snapshot.exists()) {
-            testsRef.set({
-                created: firebase.database.ServerValue.TIMESTAMP
-            }).then(function() {
-                console.log('[AutoKey] Created: tests');
-            }).catch(function(err) {
-                console.log('[AutoKey] Error creating tests:', err);
-            });
+            testsRef.set({ created: firebase.database.ServerValue.TIMESTAMP });
         }
-    }).catch(function(err) {
-        console.log('[AutoKey] Check error for tests:', err);
     });
 }
 
-// ==================== LIVE CLASSES LISTENER (FULLY DYNAMIC) ====================
-var autoScrollInterval = null;
-var autoScrollDirection = 1;
-var isUserInteracting = false;
-var userInteractionTimeout = null;
-
 function initLiveClasses() {
-    if (!db) {
-        console.log('[Live] Firebase not ready, retrying...');
-        setTimeout(initLiveClasses, 2000);
-        return;
-    }
-
-    console.log('[Live] Starting dynamic listener...');
-
+    if (!db) { setTimeout(initLiveClasses, 2000); return; }
     var liveSection = document.getElementById('live-section');
-
     function updateLiveSectionVisibility(hasData) {
         if (!liveSection) return;
-        if (hasData) {
-            liveSection.classList.remove('hidden');
-        } else {
-            liveSection.classList.add('hidden');
-        }
+        if (hasData) liveSection.classList.remove('hidden');
+        else liveSection.classList.add('hidden');
     }
-
-    // Listen to ALL liveClasses dynamically
     db.ref('liveClasses').on('value', function(snapshot) {
         var allData = snapshot.val();
-        console.log('[Live] Firebase data:', allData);
-
-        if (!allData) {
-            updateLiveSectionVisibility(false);
-            renderLiveCards([]);
-            return;
-        }
-
-        var cards = [];
-        var hasValidData = false;
-
+        if (!allData) { updateLiveSectionVisibility(false); renderLiveCards([]); return; }
+        var cards = [], hasValidData = false;
         for (var key in allData) {
             if (key === 'created') continue;
             var item = allData[key];
             if (!item) continue;
-
-            if (item.url || item.thumbnail) {
-                hasValidData = true;
-            }
-
-            // Status: ended=true → ENDED, ended=false → LIVE, else → UPCOMING
+            if (item.url || item.thumbnail) hasValidData = true;
             var status = 'upcoming';
             if (item.ended === true) status = 'ended';
             else if (item.ended === false) status = 'live';
-
             cards.push({
                 key: key,
                 name: item.name || key.replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); }),
@@ -665,15 +587,9 @@ function initLiveClasses() {
                 status: status
             });
         }
-
         updateLiveSectionVisibility(hasValidData);
         renderLiveCards(cards);
-    }, function(err) {
-        console.log('[Live] Error:', err);
-        updateLiveSectionVisibility(false);
     });
-
-    // Auto-check endTime every 30 seconds
     setInterval(function() {
         db.ref('liveClasses').once('value').then(function(snapshot) {
             var allData = snapshot.val();
@@ -684,9 +600,7 @@ function initLiveClasses() {
                 if (data && data.endTime && data.ended !== true) {
                     var now = new Date().getTime();
                     var end = new Date(data.endTime).getTime();
-                    if (!isNaN(end) && now > end) {
-                        db.ref('liveClasses/' + key).update({ ended: true });
-                    }
+                    if (!isNaN(end) && now > end) db.ref('liveClasses/' + key).update({ ended: true });
                 }
             }
         });
@@ -696,207 +610,99 @@ function initLiveClasses() {
 function renderLiveCards(cards) {
     var grid = document.getElementById('yk-live-grid');
     if (!grid) return;
-
     if (cards.length === 0) {
         grid.innerHTML = '<div class="yk-empty" style="padding:20px;text-align:center;width:100%;"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No live classes</div></div>';
         checkLiveOverflow();
         return;
     }
-
     var html = '';
     cards.forEach(function(card) {
         var thumbUrl = card.thumbnail && card.thumbnail.length > 10 
             ? getProxyImageUrl(card.thumbnail) 
             : 'https://placehold.co/400x225/1e293b/475569?text=' + encodeURIComponent(card.name.substring(0, 10)) + '&font=inter';
-
         var badgeClass = card.status;
         var badgeText = card.status === 'ended' ? 'CLASS ENDED' : (card.status === 'live' ? 'LIVE' : 'UPCOMING');
         var cardClass = card.status !== 'live' ? 'yk-live-card upcoming' : 'yk-live-card';
         var borderColor = card.status !== 'live' ? '#334155' : '#ef4444';
         var cursor = card.status !== 'live' ? 'default' : 'pointer';
         var dataAttrs = card.status === 'live' ? ' data-video-url="' + escapeHtml(card.url) + '" data-video-title="' + escapeHtml(card.name) + '"' : '';
-
         html += '<div class="' + cardClass + '" data-live="' + escapeHtml(card.name) + '" data-class-key="' + escapeHtml(card.key) + '"' + dataAttrs + ' style="border-color:' + borderColor + ';cursor:' + cursor + '">' +
-            '<div class="yk-live-thumb">' +
-            '<img src="' + escapeHtml(thumbUrl) + '" alt="">' +
-            '<div class="yk-live-badge ' + badgeClass + '">' + badgeText + '</div>' +
-            '</div>' +
-            '<div class="yk-live-info">' +
-            '<div class="yk-live-name">' + escapeHtml(card.name) + '</div>' +
-            '<div class="yk-live-time">' + escapeHtml(card.time) + '</div>' +
-            '</div>' +
-            '</div>';
+            '<div class="yk-live-thumb"><img src="' + escapeHtml(thumbUrl) + '" alt=""><div class="yk-live-badge ' + badgeClass + '">' + badgeText + '</div></div>' +
+            '<div class="yk-live-info"><div class="yk-live-name">' + escapeHtml(card.name) + '</div><div class="yk-live-time">' + escapeHtml(card.time) + '</div></div></div>';
     });
-
     grid.innerHTML = html;
-
-    // Handle image errors
     var imgs = grid.querySelectorAll('img');
     for (var i = 0; i < imgs.length; i++) {
-        imgs[i].onerror = function() {
-            this.onerror = null;
-            this.src = 'https://placehold.co/400x225/1e293b/475569?text=Error&font=inter';
-        };
+        imgs[i].onerror = function() { this.onerror = null; this.src = 'https://placehold.co/400x225/1e293b/475569?text=Error&font=inter'; };
     }
-
     checkLiveOverflow();
 }
 
-function updateLiveCardSizes() {
-    // Fixed width cards - no need to calculate
-}
-
 function startAutoScroll() {
-    // Auto-slide disabled - manual buttons only
     var grid = document.querySelector('.yk-live-grid');
     if (!grid) return;
-    // Remove any existing clones
-    var oldClones = grid.querySelectorAll('.yk-live-card.yk-clone');
-    for (var c = 0; c < oldClones.length; c++) {
-        oldClones[c].remove();
-    }
-    grid.style.animation = '';
-    grid.style.transform = '';
-    var oldStyle = document.getElementById('yk-marquee-style');
-    if (oldStyle) oldStyle.remove();
-    console.log('[AutoScroll] Disabled - manual navigation');
-}
-
-function pauseMarquee() {
-    // Disabled - manual navigation
-}
-
-function resumeMarquee() {
-    // Disabled - manual navigation
-}
-
-function initLiveSwipe() {
-    // Swipe/drag disabled - use arrow buttons instead
-    console.log('[LiveSwipe] Disabled - arrow button navigation');
-}
-
-function checkLiveOverflow() {
-    var grid = document.querySelector('.yk-live-grid');
-    if (!grid) return;
-    // Cleanup clones and animation
     var oldClones = grid.querySelectorAll('.yk-live-card.yk-clone');
     for (var c = 0; c < oldClones.length; c++) oldClones[c].remove();
     grid.style.animation = '';
     grid.style.transform = '';
     var oldStyle = document.getElementById('yk-marquee-style');
     if (oldStyle) oldStyle.remove();
-    // Show/hide arrow buttons based on overflow
-    updateSlideButtons();
-    // Restart auto-slide after cards render
-    stopAutoSlide();
-    startAutoSlide();
-    console.log('[CheckOverflow] Auto-slide mode active');
 }
 
-// ==================== RECORDED URL DETECTOR ====================
+function initLiveSwipe() { }
+
+function checkLiveOverflow() {
+    var grid = document.querySelector('.yk-live-grid');
+    if (!grid) return;
+    var oldClones = grid.querySelectorAll('.yk-live-card.yk-clone');
+    for (var c = 0; c < oldClones.length; c++) oldClones[c].remove();
+    grid.style.animation = '';
+    grid.style.transform = '';
+    var oldStyle = document.getElementById('yk-marquee-style');
+    if (oldStyle) oldStyle.remove();
+    updateSlideButtons();
+    stopAutoSlide();
+    startAutoSlide();
+}
+
 function isRecordedUrl(url) {
     if (!url || url.length < 5) return false;
     var u = url.toLowerCase();
-    // Recorded video indicators
-    if (u.indexOf('.mp4') > -1 || 
-        u.indexOf('.mkv') > -1 || 
-        u.indexOf('.webm') > -1 ||
-        u.indexOf('.avi') > -1 ||
-        u.indexOf('.mov') > -1 ||
-        u.indexOf('/file/') > -1 ||
-        u.indexOf('/stream/') > -1 ||
-        u.indexOf('/download') > -1 ||
-        u.indexOf('/dl/') > -1 ||
-        u.indexOf('/get/') > -1 ||
-        u.indexOf('/watch/') > -1) {
-        return true; // Recorded video file
-    }
-    // Live stream indicators (HLS, DASH, etc.)
-    if (u.indexOf('.m3u8') > -1 ||
-        u.indexOf('.ts') > -1 ||
-        u.indexOf('live') > -1 ||
-        u.indexOf('stream') > -1 && u.indexOf('/stream/') === -1) {
-        return false; // Live stream
-    }
-    // YouTube: if it's a regular video (not live), it's recorded
-    if ((u.indexOf('youtube.com') > -1 || u.indexOf('youtu.be') > -1) &&
-        u.indexOf('live') === -1) {
-        return true; // YouTube recorded video
-    }
-    return false; // Default: assume live
+    if (u.indexOf('.mp4') > -1 || u.indexOf('.mkv') > -1 || u.indexOf('.webm') > -1 ||
+        u.indexOf('.avi') > -1 || u.indexOf('.mov') > -1 || u.indexOf('/file/') > -1 ||
+        u.indexOf('/stream/') > -1 || u.indexOf('/download') > -1 || u.indexOf('/dl/') > -1 ||
+        u.indexOf('/get/') > -1 || u.indexOf('/watch/') > -1) return true;
+    if (u.indexOf('.m3u8') > -1 || u.indexOf('.ts') > -1 || u.indexOf('live') > -1 ||
+        (u.indexOf('stream') > -1 && u.indexOf('/stream/') === -1)) return false;
+    if ((u.indexOf('youtube.com') > -1 || u.indexOf('youtu.be') > -1) && u.indexOf('live') === -1) return true;
+    return false;
 }
 
-// ==================== TESTS ====================
 function loadTests() {
-    if (!db) {
-        document.getElementById('tests-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Firebase not connected</div></div>';
-        return;
-    }
-
+    if (!db) { document.getElementById('tests-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Firebase not connected</div></div>'; return; }
     var testsRef = db.ref('tests');
-    testsRef.on('value', function(snapshot) {
-        var data = snapshot.val();
-        renderTests(data);
-    }, function(err) {
-        console.log('[Tests] Error:', err);
-        document.getElementById('tests-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load tests</div></div>';
-    });
+    testsRef.on('value', function(snapshot) { renderTests(snapshot.val()); });
 }
 
 function loadTestsInline() {
-    if (!db) {
-        document.getElementById('home-tests-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Firebase not connected</div></div>';
-        return;
-    }
-
+    if (!db) { document.getElementById('home-tests-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Firebase not connected</div></div>'; return; }
     var testsRef = db.ref('tests');
-    testsRef.on('value', function(snapshot) {
-        var data = snapshot.val();
-        renderTestsInline(data);
-    }, function(err) {
-        console.log('[Tests] Error:', err);
-        document.getElementById('home-tests-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load tests</div></div>';
-    });
+    testsRef.on('value', function(snapshot) { renderTestsInline(snapshot.val()); });
 }
 
 function renderTestsInline(data) {
     var container = document.getElementById('home-tests-list');
-    if (!data) {
-        container.innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>';
-        return;
-    }
-
-    var html = '';
-    var count = 0;
-
+    if (!data) { container.innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>'; return; }
+    var html = '', count = 0;
     for (var key in data) {
         if (key === 'created') continue;
         var test = data[key];
         if (!test || !test.url) continue;
         count++;
-
-        var title = test.title || 'Test ' + count;
-        var date = test.date || '';
-        var subject = test.subject || 'General';
-        var url = test.url;
-
-        html += '<div class="yk-test-card" data-test-url="' + escapeHtml(url) + '">' +
-            '<div class="yk-test-row">' +
-            '<div class="yk-test-thumb">📝</div>' +
-            '<div class="yk-test-info">' +
-            '<div class="yk-test-title">' + escapeHtml(title) + '</div>' +
-            '<div class="yk-test-meta">' + escapeHtml(subject) + (date ? ' | ' + escapeHtml(date) : '') + '</div>' +
-            '<div class="yk-test-btn"><span>Start Test</span> &gt;</div>' +
-            '</div>' +
-            '<div class="yk-test-arrow">&gt;</div>' +
-            '</div>' +
-            '</div>';
+        var title = test.title || 'Test ' + count, date = test.date || '', subject = test.subject || 'General', url = test.url;
+        html += '<div class="yk-test-card" data-test-url="' + escapeHtml(url) + '"><div class="yk-test-row"><div class="yk-test-thumb">📝</div><div class="yk-test-info"><div class="yk-test-title">' + escapeHtml(title) + '</div><div class="yk-test-meta">' + escapeHtml(subject) + (date ? ' | ' + escapeHtml(date) : '') + '</div><div class="yk-test-btn"><span>Start Test</span> &gt;</div></div><div class="yk-test-arrow">&gt;</div></div></div>';
     }
-
-    if (count === 0) {
-        html = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>';
-    }
-
+    if (count === 0) html = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>';
     container.innerHTML = html;
     attachTestClicksInline();
 }
@@ -904,51 +710,23 @@ function renderTestsInline(data) {
 function attachTestClicksInline() {
     var cards = document.querySelectorAll('#home-tests-list .yk-test-card[data-test-url]');
     for (var i = 0; i < cards.length; i++) {
-        cards[i].addEventListener('click', function(e) {
-            var url = this.getAttribute('data-test-url');
-            if (url) window.open(url, '_blank');
-        });
+        cards[i].addEventListener('click', function(e) { var url = this.getAttribute('data-test-url'); if (url) window.open(url, '_blank'); });
     }
 }
 
 function renderTests(data) {
     var container = document.getElementById('tests-list');
-    if (!data) {
-        container.innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>';
-        return;
-    }
-
-    var html = '';
-    var count = 0;
-
+    if (!data) { container.innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>'; return; }
+    var html = '', count = 0;
     for (var key in data) {
         if (key === 'created') continue;
         var test = data[key];
         if (!test || !test.url) continue;
         count++;
-
-        var title = test.title || 'Test ' + count;
-        var date = test.date || '';
-        var subject = test.subject || 'General';
-        var url = test.url;
-
-        html += '<div class="yk-test-card" data-test-url="' + escapeHtml(url) + '">' +
-            '<div class="yk-test-row">' +
-            '<div class="yk-test-thumb">📝</div>' +
-            '<div class="yk-test-info">' +
-            '<div class="yk-test-title">' + escapeHtml(title) + '</div>' +
-            '<div class="yk-test-meta">' + escapeHtml(subject) + (date ? ' | ' + escapeHtml(date) : '') + '</div>' +
-            '<div class="yk-test-btn"><span>Start Test</span> &gt;</div>' +
-            '</div>' +
-            '<div class="yk-test-arrow">&gt;</div>' +
-            '</div>' +
-            '</div>';
+        var title = test.title || 'Test ' + count, date = test.date || '', subject = test.subject || 'General', url = test.url;
+        html += '<div class="yk-test-card" data-test-url="' + escapeHtml(url) + '"><div class="yk-test-row"><div class="yk-test-thumb">📝</div><div class="yk-test-info"><div class="yk-test-title">' + escapeHtml(title) + '</div><div class="yk-test-meta">' + escapeHtml(subject) + (date ? ' | ' + escapeHtml(date) : '') + '</div><div class="yk-test-btn"><span>Start Test</span> &gt;</div></div><div class="yk-test-arrow">&gt;</div></div></div>';
     }
-
-    if (count === 0) {
-        html = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>';
-    }
-
+    if (count === 0) html = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No tests available yet</div></div>';
     container.innerHTML = html;
     attachTestClicks();
 }
@@ -956,137 +734,63 @@ function renderTests(data) {
 function attachTestClicks() {
     var cards = document.querySelectorAll('.yk-test-card[data-test-url]');
     for (var i = 0; i < cards.length; i++) {
-        cards[i].addEventListener('click', function(e) {
-            var url = this.getAttribute('data-test-url');
-            if (url) window.open(url, '_blank');
-        });
+        cards[i].addEventListener('click', function(e) { var url = this.getAttribute('data-test-url'); if (url) window.open(url, '_blank'); });
     }
 }
 
-// ==================== DATA ORGANIZER ====================
 function organizeData(rawData) {
     var organized = {};
     for (var key in rawData) {
         var folderData = rawData[key];
         if (!folderData) continue;
-
         var lowerKey = key.toLowerCase().trim();
-        if (lowerKey === 'liveusers' || lowerKey === 'live_users' || 
-            lowerKey === 'stats' || lowerKey === 'analytics' ||
-            lowerKey === 'users' || lowerKey === 'sessions' ||
-            lowerKey === 'liveclasses' || lowerKey === 'live_classes' ||
-            lowerKey === 'tests' || lowerKey === 'test') {
-            continue;
-        }
-
-        var contentType = '';
-        var chapterName = '';
-        var folderLower = key.toLowerCase().trim();
-
-        if (folderLower.indexOf(' video') === folderLower.length - 6) { 
-            contentType = 'video'; 
-            chapterName = key.substring(0, key.length - 6).trim(); 
-        }
-        else if (folderLower.indexOf(' videos') === folderLower.length - 7) { 
-            contentType = 'video'; 
-            chapterName = key.substring(0, key.length - 7).trim(); 
-        }
-        else if (folderLower.indexOf(' notes') === folderLower.length - 6) { 
-            contentType = 'notes'; 
-            chapterName = key.substring(0, key.length - 6).trim(); 
-        }
-        else if (folderLower.indexOf(' note') === folderLower.length - 5) { 
-            contentType = 'notes'; 
-            chapterName = key.substring(0, key.length - 5).trim(); 
-        }
-        else if (folderLower.indexOf(' dpp') === folderLower.length - 4) { 
-            contentType = 'dpp'; 
-            chapterName = key.substring(0, key.length - 4).trim(); 
-        }
-        else if (folderLower.indexOf(' dpps') === folderLower.length - 5) { 
-            contentType = 'dpp'; 
-            chapterName = key.substring(0, key.length - 5).trim(); 
-        }
-        else { 
-            chapterName = key; 
-            contentType = 'video'; 
-        }
-
+        if (lowerKey === 'liveusers' || lowerKey === 'live_users' || lowerKey === 'stats' || lowerKey === 'analytics' ||
+            lowerKey === 'users' || lowerKey === 'sessions' || lowerKey === 'liveclasses' || lowerKey === 'live_classes' ||
+            lowerKey === 'tests' || lowerKey === 'test') continue;
+        var contentType = '', chapterName = '', folderLower = key.toLowerCase().trim();
+        if (folderLower.indexOf(' video') === folderLower.length - 6) { contentType = 'video'; chapterName = key.substring(0, key.length - 6).trim(); }
+        else if (folderLower.indexOf(' videos') === folderLower.length - 7) { contentType = 'video'; chapterName = key.substring(0, key.length - 7).trim(); }
+        else if (folderLower.indexOf(' notes') === folderLower.length - 6) { contentType = 'notes'; chapterName = key.substring(0, key.length - 6).trim(); }
+        else if (folderLower.indexOf(' note') === folderLower.length - 5) { contentType = 'notes'; chapterName = key.substring(0, key.length - 5).trim(); }
+        else if (folderLower.indexOf(' dpp') === folderLower.length - 4) { contentType = 'dpp'; chapterName = key.substring(0, key.length - 4).trim(); }
+        else if (folderLower.indexOf(' dpps') === folderLower.length - 5) { contentType = 'dpp'; chapterName = key.substring(0, key.length - 5).trim(); }
+        else { chapterName = key; contentType = 'video'; }
         var values = Object.values(folderData);
         var firstItem = values.length > 0 ? values[0] : null;
         var subject = (firstItem && firstItem.subject) ? firstItem.subject : 'Biology';
-
         var mappedSubject = subject;
         if (subject === 'Botany' || subject === 'Zoology') mappedSubject = 'Biology';
-
         if (!organized[mappedSubject]) organized[mappedSubject] = { chapters: {} };
         if (!organized[mappedSubject].chapters[chapterName]) {
-            organized[mappedSubject].chapters[chapterName] = { 
-                videos: [], notes: [], dpp: [], 
-                videoCount: 0, notesCount: 0, dppCount: 0 
-            };
+            organized[mappedSubject].chapters[chapterName] = { videos: [], notes: [], dpp: [], videoCount: 0, notesCount: 0, dppCount: 0 };
         }
-
         for (var itemKey in folderData) {
             var item = folderData[itemKey];
             if (!item) continue;
             item._key = itemKey;
-
-            if (contentType === 'video') { 
-                organized[mappedSubject].chapters[chapterName].videos.push(item); 
-                organized[mappedSubject].chapters[chapterName].videoCount++; 
-            }
-            else if (contentType === 'notes') { 
-                organized[mappedSubject].chapters[chapterName].notes.push(item); 
-                organized[mappedSubject].chapters[chapterName].notesCount++; 
-            }
-            else if (contentType === 'dpp') { 
-                organized[mappedSubject].chapters[chapterName].dpp.push(item); 
-                organized[mappedSubject].chapters[chapterName].dppCount++; 
-            }
+            if (contentType === 'video') { organized[mappedSubject].chapters[chapterName].videos.push(item); organized[mappedSubject].chapters[chapterName].videoCount++; }
+            else if (contentType === 'notes') { organized[mappedSubject].chapters[chapterName].notes.push(item); organized[mappedSubject].chapters[chapterName].notesCount++; }
+            else if (contentType === 'dpp') { organized[mappedSubject].chapters[chapterName].dpp.push(item); organized[mappedSubject].chapters[chapterName].dppCount++; }
         }
     }
-
-    // ==== NAYA CONTENT SABSE UPAR (LATEST FIRST) ====
-    // Jo bhi video/notes/dpp sabse aakhri mein add hua ho, wo list mein top par dikhega.
-    // "time" (timestamp) field se sort karte hain — agar wo na ho to _key ke number se.
-    function extractNum(item) {
-        var m = (item._key || '').match(/(\d+)\s*$/);
-        return m ? parseInt(m[1], 10) : 0;
-    }
-    function sortNewestFirst(arr) {
-        arr.sort(function(a, b) {
-            var at = a.time, bt = b.time;
-            if (at && bt) return bt - at; // bada timestamp (naya) pehle
-            return extractNum(b) - extractNum(a); // fallback: bada number (naya) pehle
-        });
-    }
+    function extractNum(item) { var m = (item._key || '').match(/(\d+)\s*$/); return m ? parseInt(m[1], 10) : 0; }
+    function sortNewestFirst(arr) { arr.sort(function(a, b) { var at = a.time, bt = b.time; if (at && bt) return bt - at; return extractNum(b) - extractNum(a); }); }
     for (var subj in organized) {
         for (var chName in organized[subj].chapters) {
             var chObj = organized[subj].chapters[chName];
-            sortNewestFirst(chObj.videos);
-            sortNewestFirst(chObj.notes);
-            sortNewestFirst(chObj.dpp);
+            sortNewestFirst(chObj.videos); sortNewestFirst(chObj.notes); sortNewestFirst(chObj.dpp);
         }
     }
-
     return organized;
 }
 
-// ==================== FIREBASE FETCH ====================
 function loadFirebaseData() {
-    return fetch(FIREBASE_CONFIG.databaseURL + '/.json').then(function(res) { 
-        return res.json(); 
-    }).then(function(raw) {
+    return fetch(FIREBASE_CONFIG.databaseURL + '/.json').then(function(res) { return res.json(); }).then(function(raw) {
         allData = organizeData(raw);
         return true;
-    }).catch(function(e) {
-        console.error('Firebase error:', e);
-        return false;
-    });
+    }).catch(function(e) { console.error('Firebase error:', e); return false; });
 }
 
-// ==================== PAGE NAVIGATION ====================
 function showPage(pageId) {
     var pages = document.querySelectorAll('.yk-page');
     for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
@@ -1098,14 +802,11 @@ function showPage(pageId) {
 function goBack() {
     if (historyStack.length > 0) {
         var prev = historyStack.pop();
-        currentSubject = prev.subject || '';
-        currentChapter = prev.chapter || '';
+        currentSubject = prev.subject || ''; currentChapter = prev.chapter || '';
         if (prev.page === 'home') { showPage('home'); }
         else if (prev.page === 'subject') { openSubject(currentSubject); }
         else if (prev.page === 'tests') { showPage('home'); }
-    } else {
-        currentSubject = ''; currentChapter = ''; showPage('home');
-    }
+    } else { currentSubject = ''; currentChapter = ''; showPage('home'); }
 }
 
 function openSubject(subject) {
@@ -1117,15 +818,10 @@ function openSubject(subject) {
     showPage('subject');
     if (!allData) {
         loadFirebaseData().then(function(success) {
-            if (!success) { 
-                document.getElementById('subject-chapters').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>'; 
-                return; 
-            }
+            if (!success) { document.getElementById('subject-chapters').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>'; return; }
             renderSubjectChapters(subject, 'chapters');
         });
-    } else {
-        renderSubjectChapters(subject, 'chapters');
-    }
+    } else { renderSubjectChapters(subject, 'chapters'); }
 }
 
 function renderSubjectChapters(subject, filter) {
@@ -1144,16 +840,12 @@ function renderSubjectChapters(subject, filter) {
         if (ch.videoCount > 0) meta.push(ch.videoCount + ' Videos');
         if (ch.notesCount > 0) meta.push(ch.notesCount + ' Notes');
         if (ch.dppCount > 0) meta.push(ch.dppCount + ' DPP');
-
-        var chThumb = '';
-        var firstVid = ch.videos && ch.videos.length > 0 ? ch.videos[0] : null;
-        // 🔥 PROXY FIX: Chapter thumbnail proxy se load karein
+        var chThumb = '', firstVid = ch.videos && ch.videos.length > 0 ? ch.videos[0] : null;
         if (firstVid && firstVid.thumbnail) {
             chThumb = '<img src="' + escapeHtml(getProxyImageUrl(firstVid.thumbnail)) + '" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">';
         } else {
             chThumb = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:20px;font-weight:700;">' + idx + '</div>';
         }
-
         html += '<div class="yk-card" data-chapter="' + escapeHtml(chName) + '"><div class="yk-ch-num">' + idx + '</div><div class="yk-info"><div class="yk-name">' + escapeHtml(chName) + '</div><div class="yk-meta">' + meta.join(' | ') + '</div></div><div class="yk-card-arrow">&gt;</div></div>';
         idx++;
     }
@@ -1170,18 +862,12 @@ function openChapter(chapterName) {
     showPage('videos');
     if (!allData) {
         loadFirebaseData().then(function(success) {
-            if (!success) { 
-                document.getElementById('videos-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>'; 
-                return; 
-            }
+            if (!success) { document.getElementById('videos-list').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">!</div><div class="yk-empty-text">Unable to load data. Check internet.</div></div>'; return; }
             renderVideos('lectures');
         });
-    } else {
-        renderVideos('lectures');
-    }
+    } else { renderVideos('lectures'); }
 }
 
-// ==================== RENDER VIDEOS ====================
 function renderVideos(tab) {
     if (!currentSubject || !currentChapter) return;
     if (!allData || !allData[currentSubject] || !allData[currentSubject].chapters[currentChapter]) {
@@ -1190,77 +876,48 @@ function renderVideos(tab) {
     }
     var chapter = allData[currentSubject].chapters[currentChapter];
     var html = '', count = 0;
-
     if (tab === 'lectures') {
         var videos = chapter.videos;
         for (var i = 0; i < videos.length; i++) {
-            var item = videos[i]; 
-            count++;
-            var date = item.date || '';
-            var url = item.url || '#';
-            var title = cleanTitle(item.title);
-            var thumbnail = item.thumbnail || '';
-            var thumbHtml = '';
-
-            // 🔥 PROXY FIX: Video thumbnail proxy se load karein
+            var item = videos[i]; count++;
+            var date = item.date || '', url = item.url || '#', title = cleanTitle(item.title), thumbnail = item.thumbnail || '', thumbHtml = '';
             if (thumbnail && thumbnail.length > 10) {
                 thumbHtml = '<img src="' + escapeHtml(getProxyImageUrl(thumbnail)) + '" alt="" onerror="this.src=\'https://placehold.co/200x140/0f172a/38bdf8?text=V' + (i+1) + '&font=inter\'">';
             } else {
                 thumbHtml = '<img src="https://placehold.co/200x140/0f172a/38bdf8?text=V' + (i+1) + '&font=inter" alt="">';
             }
-
-            html += '<div class="yk-video-card" data-video-url="' + escapeHtml(url) + '" data-video-title="' + escapeHtml(title) + '">' +
-                '<div class="yk-video-row">' +
-                '<div class="yk-video-thumb">' + thumbHtml + '<div class="play-icon"></div></div>' +
-                '<div class="yk-video-info">' +
-                '<div class="yk-video-title">' + escapeHtml(title) + '</div>' +
-                '<div class="yk-video-meta">' + escapeHtml(date) + '</div>' +
-                '</div>' +
-                '<div class="yk-video-arrow">&gt;</div>' +
-                '</div>' +
-                '</div>';
+            html += '<div class="yk-video-card" data-video-url="' + escapeHtml(url) + '" data-video-title="' + escapeHtml(title) + '"><div class="yk-video-row"><div class="yk-video-thumb">' + thumbHtml + '<div class="play-icon"></div></div><div class="yk-video-info"><div class="yk-video-title">' + escapeHtml(title) + '</div><div class="yk-video-meta">' + escapeHtml(date) + '</div></div><div class="yk-video-arrow">&gt;</div></div></div>';
         }
     } else if (tab === 'notes') {
         var notes = chapter.notes;
         for (var i = 0; i < notes.length; i++) {
-            var item = notes[i]; 
-            count++;
+            var item = notes[i]; count++;
             var date = item.date || '';
             html += '<div class="yk-doc-card" data-doc-url="' + escapeHtml(item.url) + '"><div class="yk-doc-icon" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3)">N</div><div class="yk-doc-info"><div class="yk-doc-title">' + escapeHtml(cleanTitle(item.title)) + '</div><div class="yk-doc-meta"><span class="yk-badge notes">Notes</span><span>' + escapeHtml(date) + '</span></div></div><div class="yk-doc-arrow">&gt;</div></div>';
         }
     } else if (tab === 'dpp') {
         var dpps = chapter.dpp;
         for (var i = 0; i < dpps.length; i++) {
-            var item = dpps[i]; 
-            count++;
+            var item = dpps[i]; count++;
             var date = item.date || '';
             html += '<div class="yk-doc-card" data-doc-url="' + escapeHtml(item.url) + '"><div class="yk-doc-icon" style="background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3)">D</div><div class="yk-doc-info"><div class="yk-doc-title">' + escapeHtml(cleanTitle(item.title)) + '</div><div class="yk-doc-meta"><span class="yk-badge dpp">DPP</span><span>' + escapeHtml(date) + '</span></div></div><div class="yk-doc-arrow">&gt;</div></div>';
         }
     }
-
-    if (count === 0) { 
-        html = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No ' + tab + ' available for this chapter</div></div>'; 
-    }
+    if (count === 0) html = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No ' + tab + ' available for this chapter</div></div>';
     document.getElementById('videos-list').innerHTML = html;
     attachVideoClicks();
 }
 
-// ==================== PLAYER FUNCTIONS ====================
 function isTelegramBotLink(url) {
     if (!url) return false;
     var u = url.toLowerCase();
-    return u.indexOf('t.me/') !== -1 || u.indexOf('telegram.me/') !== -1 ||
-           u.indexOf('telegram.dog/') !== -1 || u.indexOf('nullzair') !== -1 ||
-           u.indexOf('awakeners') !== -1 || u.indexOf('/stream/') !== -1 ||
-           u.indexOf('/file/') !== -1 || u.indexOf('/dl/') !== -1 ||
-           u.indexOf('/download/') !== -1 || u.indexOf('/get/') !== -1 ||
-           u.indexOf('/watch/') !== -1;
+    return u.indexOf('t.me/') !== -1 || u.indexOf('telegram.me/') !== -1 || u.indexOf('telegram.dog/') !== -1 ||
+           u.indexOf('nullzair') !== -1 || u.indexOf('awakeners') !== -1 || u.indexOf('/stream/') !== -1 ||
+           u.indexOf('/file/') !== -1 || u.indexOf('/dl/') !== -1 || u.indexOf('/download/') !== -1 ||
+           u.indexOf('/get/') !== -1 || u.indexOf('/watch/') !== -1;
 }
 
-function isYouTubeUrl(url) {
-    if (!url) return false;
-    return url.indexOf('youtube.com/') !== -1 || url.indexOf('youtu.be/') !== -1;
-}
+function isYouTubeUrl(url) { if (!url) return false; return url.indexOf('youtube.com/') !== -1 || url.indexOf('youtu.be/') !== -1; }
 
 function getYouTubeEmbed(url) {
     var m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
@@ -1268,14 +925,10 @@ function getYouTubeEmbed(url) {
 }
 
 function resetPlayer() {
-    var video = document.getElementById('native-video');
-    var iframe = document.getElementById('iframe-player');
-    var iframeWrapper = document.getElementById('iframe-wrapper');
-
+    var video = document.getElementById('native-video'), iframe = document.getElementById('iframe-player'), iframeWrapper = document.getElementById('iframe-wrapper');
     if (video) { video.pause(); video.src = ''; video.load(); video.classList.remove('active'); }
     if (iframe) { iframe.src = ''; }
     if (iframeWrapper) { iframeWrapper.style.display = 'none'; iframeWrapper.classList.remove('active'); }
-
     document.getElementById('player-loading').style.display = 'block';
     document.getElementById('player-error').style.display = 'none';
 }
@@ -1286,98 +939,49 @@ function showPlayerLoading(msg) {
     document.getElementById('player-error').style.display = 'none';
 }
 
-function hidePlayerLoading() {
-    document.getElementById('player-loading').style.display = 'none';
-}
+function hidePlayerLoading() { document.getElementById('player-loading').style.display = 'none'; }
 
 function openPlayer(url, title) {
     if (!url || url === '#') return;
-
     document.getElementById('player-title').textContent = title || 'Video';
     document.getElementById('video-player').classList.add('active');
-
     resetPlayer();
-
-    var video = document.getElementById('native-video');
-    var iframeWrapper = document.getElementById('iframe-wrapper');
-    var iframe = document.getElementById('iframe-player');
-
+    var video = document.getElementById('native-video'), iframeWrapper = document.getElementById('iframe-wrapper'), iframe = document.getElementById('iframe-player');
     if (isTelegramBotLink(url) || isYouTubeUrl(url)) {
         video.classList.remove('active');
         iframeWrapper.style.display = 'block';
         iframeWrapper.classList.add('active');
         showPlayerLoading('Loading video...');
-
-        if (isYouTubeUrl(url)) {
-            iframe.src = getYouTubeEmbed(url);
-        } else {
-            iframe.src = url;
-        }
-
-        iframe.onload = function() {
-            hidePlayerLoading();
-        };
-
-        setTimeout(function() {
-            hidePlayerLoading();
-        }, 4000);
-
+        if (isYouTubeUrl(url)) iframe.src = getYouTubeEmbed(url); else iframe.src = url;
+        iframe.onload = function() { hidePlayerLoading(); };
+        setTimeout(function() { hidePlayerLoading(); }, 4000);
     } else {
         video.classList.add('active');
         iframeWrapper.style.display = 'none';
         iframeWrapper.classList.remove('active');
-
-        video.pause();
-        video.src = '';
-        video.load();
-        video.src = url;
-        video.type = 'video/mp4';
-
+        video.pause(); video.src = ''; video.load(); video.src = url; video.type = 'video/mp4';
         showPlayerLoading('Loading video...');
-
         var pp = video.play();
-        if (pp !== undefined) {
-            pp.then(function() {
-                hidePlayerLoading();
-            }).catch(function(err) {
-                console.log('Autoplay blocked:', err);
-                hidePlayerLoading();
-            });
-        }
-
-        video.onerror = function() {
-            hidePlayerLoading();
-            document.getElementById('player-error').style.display = 'block';
-        };
-
-        video.onloadeddata = function() {
-            hidePlayerLoading();
-        };
+        if (pp !== undefined) pp.then(function() { hidePlayerLoading(); }).catch(function(err) { hidePlayerLoading(); });
+        video.onerror = function() { hidePlayerLoading(); document.getElementById('player-error').style.display = 'block'; };
+        video.onloadeddata = function() { hidePlayerLoading(); };
     }
 }
 
 function closePlayer() {
-    var video = document.getElementById('native-video');
-    var iframe = document.getElementById('iframe-player');
-    var iframeWrapper = document.getElementById('iframe-wrapper');
-
+    var video = document.getElementById('native-video'), iframe = document.getElementById('iframe-player'), iframeWrapper = document.getElementById('iframe-wrapper');
     if (video) { video.pause(); video.src = ''; video.load(); video.classList.remove('active'); }
     if (iframe) { iframe.src = ''; }
     if (iframeWrapper) { iframeWrapper.style.display = 'none'; iframeWrapper.classList.remove('active'); }
-
     document.getElementById('player-loading').style.display = 'none';
     document.getElementById('player-error').style.display = 'none';
     document.getElementById('video-player').classList.remove('active');
-
     if (document.fullscreenElement) document.exitFullscreen();
     if (document.webkitFullscreenElement) document.webkitExitFullscreen();
     if (document.mozFullScreenElement) document.mozCancelFullScreen();
 }
 
-// ==================== UTILITY FUNCTIONS ====================
-function showLiveAlert(name) { 
-    alert(name + ' - Coming Soon! Live classes will start soon.'); 
-}
+function showLiveAlert(name) { alert(name + ' - Coming Soon! Live classes will start soon.'); }
 
 function cleanTitle(title) {
     if (!title) return 'Untitled';
@@ -1391,16 +995,13 @@ function escapeHtml(text) {
     return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// ==================== TAB SWITCHING ====================
 function switchTopTab(tab) {
     var tabs = document.querySelectorAll('#home-tabs .yk-top-tab');
     for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     var activeBtn = document.querySelector('#home-tabs .yk-top-tab[data-tab="' + tab + '"');
     if (activeBtn) activeBtn.classList.add('active');
     updateActiveUserPage('home-' + tab);
-
     if (tab === 'tests') {
-        // Show tests inline on home page - NO navigation away
         document.getElementById('live-section').style.display = 'none';
         document.getElementById('home-subjects').style.display = 'none';
         document.querySelector('.yk-section-title').style.display = 'none';
@@ -1408,7 +1009,6 @@ function switchTopTab(tab) {
         loadTestsInline();
         showPage('home');
     } else if (tab === 'khazana') {
-        // Khazana - show empty message on home page
         document.getElementById('live-section').style.display = 'none';
         document.getElementById('home-subjects').style.display = 'block';
         document.getElementById('home-subjects').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No khazana available yet</div></div>';
@@ -1417,7 +1017,6 @@ function switchTopTab(tab) {
         document.getElementById('home-tests-section').style.display = 'none';
         showPage('home');
     } else if (tab === 'announcements') {
-        // Announcements - show empty message on home page
         document.getElementById('live-section').style.display = 'none';
         document.getElementById('home-subjects').style.display = 'block';
         document.getElementById('home-subjects').innerHTML = '<div class="yk-empty"><div class="yk-empty-icon">-</div><div class="yk-empty-text">No announcements available yet</div></div>';
@@ -1426,7 +1025,6 @@ function switchTopTab(tab) {
         document.getElementById('home-tests-section').style.display = 'none';
         showPage('home');
     } else {
-        // Classes tab - show everything
         document.getElementById('home-subjects').innerHTML = '<div class="yk-card" data-subject="Physics"><div class="yk-icon physics-icon"><span style="color:#f59e0b">P</span></div><div class="yk-info"><div class="yk-name">Physics</div><div class="yk-meta">Click to view chapters</div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" data-subject="Biology"><div class="yk-icon biology-icon"><span style="color:#ec4899">B</span></div><div class="yk-info"><div class="yk-name">Biology</div><div class="yk-meta">Click to view chapters</div></div><div class="yk-card-arrow">&gt;</div></div><div class="yk-card" data-subject="Chemistry"><div class="yk-icon chemistry-icon"><span style="color:#10b981">C</span></div><div class="yk-info"><div class="yk-name">Chemistry</div><div class="yk-meta">Click to view chapters</div></div><div class="yk-card-arrow">&gt;</div></div>';
         document.getElementById('live-section').style.display = 'block';
         document.getElementById('home-subjects').style.display = 'block';
@@ -1454,42 +1052,28 @@ function switchVideoTab(tab) {
     renderVideos(tab);
 }
 
-// ==================== EVENT ATTACHMENTS ====================
 function attachSubjectClicks() {
     var cards = document.querySelectorAll('#home-subjects .yk-card[data-subject]');
     for (var i = 0; i < cards.length; i++) {
-        cards[i].addEventListener('click', function(e) {
-            var subject = this.getAttribute('data-subject');
-            if (subject) openSubject(subject);
-        });
+        cards[i].addEventListener('click', function(e) { var subject = this.getAttribute('data-subject'); if (subject) openSubject(subject); });
     }
 }
 
 function attachChapterClicks() {
     var cards = document.querySelectorAll('#subject-chapters .yk-card[data-chapter]');
     for (var i = 0; i < cards.length; i++) {
-        cards[i].addEventListener('click', function(e) {
-            var chapter = this.getAttribute('data-chapter');
-            if (chapter) openChapter(chapter);
-        });
+        cards[i].addEventListener('click', function(e) { var chapter = this.getAttribute('data-chapter'); if (chapter) openChapter(chapter); });
     }
 }
 
 function attachVideoClicks() {
     var videoCards = document.querySelectorAll('#videos-list .yk-video-card[data-video-url]');
     for (var i = 0; i < videoCards.length; i++) {
-        videoCards[i].addEventListener('click', function(e) {
-            var url = this.getAttribute('data-video-url');
-            var title = this.getAttribute('data-video-title');
-            if (url) openPlayer(url, title);
-        });
+        videoCards[i].addEventListener('click', function(e) { var url = this.getAttribute('data-video-url'); var title = this.getAttribute('data-video-title'); if (url) openPlayer(url, title); });
     }
     var docCards = document.querySelectorAll('#videos-list .yk-doc-card[data-doc-url]');
     for (var i = 0; i < docCards.length; i++) {
-        docCards[i].addEventListener('click', function(e) {
-            var url = this.getAttribute('data-doc-url');
-            if (url) window.open(url, '_blank');
-        });
+        docCards[i].addEventListener('click', function(e) { var url = this.getAttribute('data-doc-url'); if (url) window.open(url, '_blank'); });
     }
 }
 
@@ -1498,7 +1082,6 @@ function attachLiveClicks() {
     if (!grid) return;
     if (grid._liveClickHandler) grid.removeEventListener('click', grid._liveClickHandler);
     grid._liveClickHandler = function(e) {
-        // Ignore button clicks
         if (e.target.closest('.yk-slide-btn')) return;
         var card = e.target.closest('.yk-live-card');
         if (!card || card.classList.contains('yk-clone')) return;
@@ -1506,12 +1089,7 @@ function attachLiveClicks() {
         var title = card.getAttribute('data-video-title') || card.getAttribute('data-live');
         var status = card.querySelector('.yk-live-badge');
         var isLive = status && status.classList.contains('live');
-
-        if (isLive && url && url.length > 5) {
-            window.open(url, '_blank');
-        } else {
-            alert('Class Ended');
-        }
+        if (isLive && url && url.length > 5) window.open(url, '_blank'); else alert('Class Ended');
     };
     grid.addEventListener('click', grid._liveClickHandler);
 }
@@ -1519,32 +1097,23 @@ function attachLiveClicks() {
 function attachTabClicks() {
     var homeTabs = document.querySelectorAll('#home-tabs .yk-top-tab');
     for (var i = 0; i < homeTabs.length; i++) {
-        homeTabs[i].addEventListener('click', function(e) {
-            var tab = this.getAttribute('data-tab');
-            if (tab) switchTopTab(tab);
-        });
+        homeTabs[i].addEventListener('click', function(e) { var tab = this.getAttribute('data-tab'); if (tab) switchTopTab(tab); });
     }
     var subjectTabs = document.querySelectorAll('#subject-tabs .yk-top-tab');
     for (var i = 0; i < subjectTabs.length; i++) {
-        subjectTabs[i].addEventListener('click', function(e) {
-            var filter = this.getAttribute('data-filter');
-            if (filter) switchSubjectTab(filter);
-        });
+        subjectTabs[i].addEventListener('click', function(e) { var filter = this.getAttribute('data-filter'); if (filter) switchSubjectTab(filter); });
     }
     var videoTabs = document.querySelectorAll('#video-tabs .yk-video-tab');
     for (var i = 0; i < videoTabs.length; i++) {
-        videoTabs[i].addEventListener('click', function(e) {
-            var tab = this.getAttribute('data-tab');
-            if (tab) switchVideoTab(tab);
-        });
+        videoTabs[i].addEventListener('click', function(e) { var tab = this.getAttribute('data-tab'); if (tab) switchVideoTab(tab); });
     }
 }
 
 function attachBackButtons() {
     document.getElementById('subject-back').addEventListener('click', function(e) { goBack(); });
     document.getElementById('videos-back').addEventListener('click', function(e) { goBack(); });
-    document.getElementById('tests-back').addEventListener('click', function(e) { 
-        historyStack = []; 
+    document.getElementById('tests-back').addEventListener('click', function(e) {
+        historyStack = [];
         showPage('home');
         document.getElementById('live-section').style.display = 'block';
         document.getElementById('home-subjects').style.display = 'block';
@@ -1555,18 +1124,11 @@ function attachBackButtons() {
     });
 }
 
-function attachPlayerControls() {
-    document.getElementById('player-close').addEventListener('click', function(e) { closePlayer(); });
-}
+function attachPlayerControls() { document.getElementById('player-close').addEventListener('click', function(e) { closePlayer(); }); }
 
-document.addEventListener('keydown', function(e) { 
-    if (e.key === 'Escape') { closePlayer(); } 
-});
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closePlayer(); } });
 
 // ==================== FIREBASE ACTIVE USER TRACKING ====================
-// Uses SECONDARY Firebase (active-user-f2236)
-// Master key: activeUsers/heartbeatOnOff
-
 var activeUserId = null;
 var activeUserRef = null;
 var heartbeatEnabled = true;
@@ -1574,110 +1136,62 @@ var heartbeatIntervalId = null;
 var isConnectedToSecondary = false;
 var dbActiveUsers = null;
 
-// Initialize secondary Firebase for active users
 function initSecondaryFirebase() {
     try {
-        var activeApp = firebase.initializeApp({
-            databaseURL: "https://neetclass2-9108d-default-rtdb.firebaseio.com"
-        }, 'activeUsersApp');
+        var activeApp = firebase.initializeApp({ databaseURL: "https://neetclass2-9108d-default-rtdb.firebaseio.com" }, 'activeUsersApp');
         dbActiveUsers = activeApp.database();
         console.log('[Firebase] Secondary SDK initialized (Active Users)');
         return true;
-    } catch(e) {
-        console.error('[Firebase] Secondary init failed:', e);
-        return false;
-    }
+    } catch(e) { console.error('[Firebase] Secondary init failed:', e); return false; }
 }
 
-// Listen for admin toggle
 function initHeartbeatToggle() {
-    if (!dbActiveUsers) {
-        console.log('[ActiveUsers] Secondary DB not ready');
-        return;
-    }
+    if (!dbActiveUsers) return;
     var toggleRef = dbActiveUsers.ref('activeUsers/heartbeatOnOff');
     toggleRef.on('value', function(snapshot) {
         var val = snapshot.val();
-        if (val === false) {
-            heartbeatEnabled = false;
-            disconnectFromSecondary();
-        } else {
-            heartbeatEnabled = true;
-            if (!isConnectedToSecondary) connectToSecondary();
-        }
+        if (val === false) { heartbeatEnabled = false; disconnectFromSecondary(); }
+        else { heartbeatEnabled = true; if (!isConnectedToSecondary) connectToSecondary(); }
     });
 }
 
-// Connect to secondary
 function connectToSecondary() {
     if (!dbActiveUsers || isConnectedToSecondary) return;
-
-    // Check if we already have a stored userId in localStorage
     var storedUserId = localStorage.getItem('yk_active_user_id');
-    if (storedUserId) {
-        activeUserId = storedUserId;
-        console.log('[ActiveUsers] Reusing stored ID:', activeUserId);
-    } else {
-        // Generate new ID only if not stored
-        var timestamp = new Date().getTime();
-        var random = Math.random().toString(36).substring(2, 10);
+    if (storedUserId) { activeUserId = storedUserId; }
+    else {
+        var timestamp = new Date().getTime(), random = Math.random().toString(36).substring(2, 10);
         activeUserId = 'user_' + timestamp + '_' + random;
         localStorage.setItem('yk_active_user_id', activeUserId);
-        console.log('[ActiveUsers] New ID generated:', activeUserId);
     }
-
-    var ua = navigator.userAgent;
-    var browser = 'Unknown';
-    var device = 'Desktop';
+    var ua = navigator.userAgent, browser = 'Unknown', device = 'Desktop';
     if (ua.indexOf('Chrome') > -1) browser = 'Chrome';
     else if (ua.indexOf('Firefox') > -1) browser = 'Firefox';
     else if (ua.indexOf('Safari') > -1) browser = 'Safari';
     else if (ua.indexOf('Edg') > -1) browser = 'Edge';
     if (/Android/.test(ua)) device = 'Android';
     else if (/iPhone|iPad|iPod/.test(ua)) device = 'iOS';
-
     activeUserRef = dbActiveUsers.ref('activeUsers/' + activeUserId);
-
     var now = new Date().getTime();
     var userData = {
-        userId: activeUserId,
-        browser: browser,
-        device: device,
+        userId: activeUserId, browser: browser, device: device,
         screen: window.screen.width + 'x' + window.screen.height,
-        page: getCurrentPage(),
-        joinedAt: now,
+        page: getCurrentPage(), joinedAt: now,
         joinedAtFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
         lastSeen: now,
         lastSeenFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })
     };
-
     activeUserRef.onDisconnect().remove();
-    activeUserRef.set(userData).then(function() {
-        isConnectedToSecondary = true;
-        console.log('[ActiveUsers] CONNECTED:', activeUserId);
-        startHeartbeat();
-    }).catch(function(err) {
-        console.log('[ActiveUsers] Connection error:', err);
-    });
+    activeUserRef.set(userData).then(function() { isConnectedToSecondary = true; startHeartbeat(); });
 }
 
-// Disconnect
 function disconnectFromSecondary() {
     if (!isConnectedToSecondary) return;
-    if (heartbeatIntervalId) {
-        clearInterval(heartbeatIntervalId);
-        heartbeatIntervalId = null;
-    }
-    if (activeUserRef) {
-        activeUserRef.remove();
-        activeUserRef = null;
-    }
-    // DO NOT clear activeUserId from localStorage - it should persist
+    if (heartbeatIntervalId) { clearInterval(heartbeatIntervalId); heartbeatIntervalId = null; }
+    if (activeUserRef) { activeUserRef.remove(); activeUserRef = null; }
     isConnectedToSecondary = false;
-    console.log('[ActiveUsers] DISCONNECTED (ID preserved in localStorage)');
 }
 
-// Heartbeat every 60 seconds
 function startHeartbeat() {
     if (heartbeatIntervalId) clearInterval(heartbeatIntervalId);
     heartbeatIntervalId = setInterval(function() {
@@ -1687,30 +1201,19 @@ function startHeartbeat() {
             lastSeen: now,
             lastSeenFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
             page: getCurrentPage()
-        }).then(function() {
-            console.log('[ActiveUsers] Heartbeat sent');
-        }).catch(function(err) {
-            console.log('[ActiveUsers] Heartbeat error:', err);
         });
     }, 60000);
 }
 
-// Update page tracking
 function updateActiveUserPage(page) {
     if (!isConnectedToSecondary || !activeUserRef || !heartbeatEnabled) return;
     var now = new Date().getTime();
     activeUserRef.update({
-        page: page,
-        lastSeen: now,
+        page: page, lastSeen: now,
         lastSeenFormatted: new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })
-    }).then(function() {
-        console.log('[ActiveUsers] Page updated:', page);
-    }).catch(function(err) {
-        console.log('[ActiveUsers] Page update error:', err);
     });
 }
 
-// Get current page
 function getCurrentPage() {
     var pages = document.querySelectorAll('.yk-page.active');
     if (pages.length > 0) {
@@ -1727,322 +1230,156 @@ function getCurrentPage() {
     return 'home';
 }
 
-// Init tracking
 function initActiveUserTracking() {
     if (!dbActiveUsers) return;
     var toggleRef = dbActiveUsers.ref('activeUsers/heartbeatOnOff');
-    toggleRef.once('value').then(function(snapshot) {
-        if (snapshot.val() !== false) connectToSecondary();
-        else console.log('[ActiveUsers] Master key OFF');
-    });
+    toggleRef.once('value').then(function(snapshot) { if (snapshot.val() !== false) connectToSecondary(); });
 }
 
-// Admin toggle
-window.toggleHeartbeat = function(state) {
-    if (!dbActiveUsers) return;
-    dbActiveUsers.ref('activeUsers/heartbeatOnOff').set(state === true);
-};
+window.toggleHeartbeat = function(state) { if (!dbActiveUsers) return; dbActiveUsers.ref('activeUsers/heartbeatOnOff').set(state === true); };
 
-// Admin get users
 window.getActiveUsers = function() {
     if (!dbActiveUsers) return;
     dbActiveUsers.ref('activeUsers').once('value').then(function(snapshot) {
-        var data = snapshot.val();
-        var users = [], count = 0;
+        var data = snapshot.val(); var users = [], count = 0;
         if (data) {
             for (var key in data) {
                 if (key === 'heartbeatOnOff') continue;
                 var user = data[key];
                 if (user.lastSeen) user.lastSeenReadable = new Date(user.lastSeen).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
                 if (user.joinedAt) user.joinedAtReadable = new Date(user.joinedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
-                users.push(user);
-                count++;
+                users.push(user); count++;
             }
         }
-        console.log('=== ACTIVE USERS ===');
-        console.log('Total:', count);
-        console.log('Time:', new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }));
         console.table(users);
     });
 };
 
-window.addEventListener('beforeunload', function() {
-    if (activeUserRef) activeUserRef.remove();
-});
+window.addEventListener('beforeunload', function() { if (activeUserRef) activeUserRef.remove(); });
 
+// ==================== DAILY UNIQUE DEVICE COUNTER (LOCAL DEVICE-ID BASED) ====================
+// IP ka use nahi karta. Har device/browser ko ek permanent random ID diya jata
+// hai jo localStorage mein save rehta hai (app uninstall/data-clear na ho tab
+// tak wahi ID reuse hoga). Din mein sirf 1 baar count hota hai. Raat 12 baje
+// IST pe naya din start aur purana din ka device-list Firebase se delete ho jata hai.
 
-// ==================== FAKE ONLINE USER COUNTER ====================
-function initFakeOnlineCounter() {
-    var counterEl = document.getElementById('yk-online-count');
-    if (!counterEl) return;
-
-    function getFakeCount() {
-        var now = new Date();
-        var h = now.getHours();
-        var m = now.getMinutes();
-        var totalMin = h * 60 + m;
-        var isDay = h >= 6 && h < 18;
-
-        if (isDay) {
-            var progress = (totalMin - 360) / 720;
-            var peak = Math.sin(progress * Math.PI);
-            return Math.floor(1129 + (101 * peak) + (Math.random() * 10 - 5));
-        } else {
-            var progress = h >= 18 ? (totalMin - 1080) / 720 : (totalMin + 360) / 720;
-            var peak = Math.sin(progress * Math.PI);
-            return Math.floor(89 + (111 * peak) + (Math.random() * 6 - 3));
-        }
+function getDeviceUID() {
+    var id = localStorage.getItem('yk_device_uid');
+    if (!id) {
+        var timestamp = new Date().getTime();
+        var random = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+        id = 'dev_' + timestamp + '_' + random;
+        localStorage.setItem('yk_device_uid', id);
     }
-
-    counterEl.textContent = getFakeCount();
-
-    setInterval(function() {
-        var cur = parseInt(counterEl.textContent) || 0;
-        var change = Math.floor(Math.random() * 5) - 2;
-        var next = cur + change;
-        var h = new Date().getHours();
-        if (h >= 6 && h < 18) {
-            if (next < 1120) next = 1120;
-            if (next > 1240) next = 1240;
-        } else {
-            if (next < 80) next = 80;
-            if (next > 215) next = 215;
-        }
-        counterEl.textContent = next;
-    }, 4000 + Math.floor(Math.random() * 4000));
-}
-
-// ==================== DAILY UNIQUE DEVICE COUNTER (FIXED) ====================
-// Har device ko din mein sirf 1 baar count karta hai
-// Raat 12 baje IST pe auto-reset
-
-function getDeviceId() {
-    // Try to get existing ID first
-    var id = localStorage.getItem('yk_device_id');
-    if (id) return id;
-
-    // Generate fingerprint from device characteristics
-    // Same device = same fingerprint across all browsers
-    var fingerprint = generateDeviceFingerprint();
-
-    // Check if this fingerprint already exists in Firebase
-    // For now, use fingerprint as ID (consistent across browsers)
-    id = 'dev_' + fingerprint;
-    localStorage.setItem('yk_device_id', id);
-    console.log('[DailyVisitor] New device ID created:', id);
     return id;
 }
-
-function generateDeviceFingerprint() {
-    // Collect device characteristics
-    var components = [];
-
-    // Screen resolution (same across browsers on same device)
-    components.push(screen.width + 'x' + screen.height);
-    components.push(screen.colorDepth);
-    components.push(screen.pixelDepth || '');
-
-    // Timezone (same for device)
-    components.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
-
-    // Platform
-    components.push(navigator.platform || '');
-
-    // Hardware concurrency (CPU cores)
-    components.push(navigator.hardwareConcurrency || '');
-
-    // Device memory (if available)
-    components.push(navigator.deviceMemory || '');
-
-    // Touch support
-    components.push('ontouchstart' in window ? 'touch' : 'no-touch');
-
-    // Language
-    components.push(navigator.language || '');
-
-    // Combine and hash
-    var raw = components.join('|');
-    return hashString(raw);
-}
-
-function hashString(str) {
-    // Simple hash function (djb2)
-    var hash = 5381;
-    for (var i = 0; i < str.length; i++) {
-        hash = ((hash << 5) + hash) + str.charCodeAt(i);
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    // Convert to positive hex string
-    return Math.abs(hash).toString(16).substring(0, 12);
-}
-
-
 
 function getTodayKey() {
     var now = new Date();
     var istString = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
     var istDate = new Date(istString);
-    var y = istDate.getFullYear();
-    var m = String(istDate.getMonth() + 1).padStart(2, '0');
-    var d = String(istDate.getDate()).padStart(2, '0');
+    var y = istDate.getFullYear(), m = String(istDate.getMonth() + 1).padStart(2, '0'), d = String(istDate.getDate()).padStart(2, '0');
     return y + '-' + m + '-' + d;
 }
 
-// Global tracker
-var _dailyVisitorTracked = false;
 var _dailyVisitorListeners = [];
 
 function trackDailyUniqueVisitor() {
-    if (!dbActiveUsers) {
-        console.log('[DailyVisitor] Waiting for Firebase...');
-        setTimeout(trackDailyUniqueVisitor, 2000);
-        return;
-    }
-
+    if (!dbActiveUsers) { setTimeout(trackDailyUniqueVisitor, 2000); return; }
+    var deviceId = getDeviceUID();
     var todayKey = getTodayKey();
     var dailyPath = 'dailyVisitors/' + todayKey;
     var devicesRef = dbActiveUsers.ref(dailyPath + '/devices');
     var countRef = dbActiveUsers.ref(dailyPath + '/count');
-    var metaRef = dbActiveUsers.ref(dailyPath + '/meta');
 
-    // Get current device fingerprint
-    var currentFingerprint = generateDeviceFingerprint();
-    var currentBrowser = navigator.userAgent.substring(0, 50);
-
-    console.log('[DailyVisitor] Checking for existing device with fingerprint:', currentFingerprint);
-
-    // Step 1: Check ALL existing devices for same fingerprint
-    devicesRef.once('value').then(function(snapshot) {
-        var devices = snapshot.val() || {};
-        var existingDeviceId = null;
-        var existingDeviceData = null;
-
-        // Check each device for matching fingerprint
-        for (var devId in devices) {
-            if (devId === 'true') continue; // Skip boolean values
-            var devData = devices[devId];
-            if (devData && devData.fingerprint === currentFingerprint) {
-                existingDeviceId = devId;
-                existingDeviceData = devData;
-                console.log('[DailyVisitor] Found existing device:', devId);
-                break;
-            }
-        }
-
-        if (existingDeviceId) {
-            // Same device found - update timestamp, don't increment count
-            var updateData = {
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                browser: currentBrowser,
-                fingerprint: currentFingerprint,
-                visits: (existingDeviceData.visits || 1) + 1
-            };
-
-            devicesRef.child(existingDeviceId).update(updateData).then(function() {
-                console.log('[DailyVisitor] Existing device updated:', existingDeviceId);
-                // Store the existing ID locally
-                localStorage.setItem('yk_device_id', existingDeviceId);
-                listenDailyCount(todayKey);
-            });
-            return;
-        }
-
-        // Step 2: No existing device found - create new entry
-        var deviceId = getDeviceId();
-        var deviceData = {
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            browser: currentBrowser,
-            fingerprint: currentFingerprint,
-            visits: 1
-        };
-
-        devicesRef.child(deviceId).set(deviceData).then(function() {
-            console.log('[DailyVisitor] New device marked:', deviceId);
-
-            // Step 3: Increment count using transaction (atomic)
-            countRef.transaction(function(currentCount) {
-                return (currentCount || 0) + 1;
-            }).then(function(result) {
-                if (result.committed) {
-                    console.log('[DailyVisitor] Count updated to:', result.snapshot.val());
-                }
-            }).catch(function(err) {
-                console.error('[DailyVisitor] Count transaction failed:', err);
-            });
-
-            // Step 4: Update meta
-            metaRef.set({
-                lastUpdated: firebase.database.ServerValue.TIMESTAMP,
-                date: todayKey
-            });
-
-        }).catch(function(err) {
-            console.error('[DailyVisitor] Device mark failed:', err);
+    devicesRef.child(deviceId).once('value').then(function(snapshot) {
+        if (snapshot.exists()) { listenDailyCount(todayKey); return; }
+        devicesRef.child(deviceId).set({ timestamp: firebase.database.ServerValue.TIMESTAMP }).then(function() {
+            countRef.transaction(function(currentCount) { return (currentCount || 0) + 1; });
         });
-
         listenDailyCount(todayKey);
-
-    }).catch(function(err) {
-        console.error('[DailyVisitor] Check failed:', err);
     });
-
-    // Step 5: Cleanup old dates
     cleanupOldDailyVisitors(todayKey);
 }
 
-
-
+// NOTE: yeh REAL count hai — sirf admin ke liye. User ko yeh screen par kabhi
+// nahi dikhta; console mein dekhne ke liye window.getRealDailyCount() call karein.
 function listenDailyCount(todayKey) {
-    // Remove old listeners
-    _dailyVisitorListeners.forEach(function(listener) {
-        listener.off();
-    });
+    _dailyVisitorListeners.forEach(function(listener) { listener.off(); });
     _dailyVisitorListeners = [];
-
     var countRef = dbActiveUsers.ref('dailyVisitors/' + todayKey + '/count');
     countRef.on('value', function(snapshot) {
         var count = snapshot.val() || 0;
-        console.log('[DailyVisitor] Today total unique devices:', count);
+        window._ykRealDailyCount = count;
+        console.log('[REAL DAILY DEVICES - ADMIN ONLY]', count);
     });
     _dailyVisitorListeners.push(countRef);
 }
 
+window.getRealDailyCount = function() { return window._ykRealDailyCount || 0; };
+
+// Purana din ka pura device-list (mobile + laptop dono) delete kar deta hai,
+// sirf aaj wala din Firebase mein rehta hai.
 function cleanupOldDailyVisitors(todayKey) {
     dbActiveUsers.ref('dailyVisitors').once('value').then(function(snapshot) {
         var data = snapshot.val();
         if (!data) return;
-        var deleted = 0;
         for (var dateKey in data) {
             if (dateKey !== todayKey && dateKey !== 'meta') {
                 dbActiveUsers.ref('dailyVisitors/' + dateKey).remove();
-                deleted++;
             }
         }
-        if (deleted > 0) {
-            console.log('[DailyVisitor] Deleted', deleted, 'old date(s)');
-        }
-    }).catch(function(err) {
-        console.log('[DailyVisitor] Cleanup error:', err);
     });
 }
 
-// Auto-detect midnight IST and re-track
+// Har 30 second mein date check karo; IST midnight cross hote hi naya din shuru
+// aur counter turant reset ho jayega (purana list delete + naya count 0 se start)
 var _lastDailyDate = getTodayKey();
 setInterval(function() {
     var currentDate = getTodayKey();
     if (currentDate !== _lastDailyDate) {
-        console.log('[DailyVisitor] Date changed! New day:', currentDate);
         _lastDailyDate = currentDate;
-        _dailyVisitorTracked = false;
+        var counterEl = document.getElementById('yk-online-count');
+        if (counterEl) counterEl.textContent = '0';
         trackDailyUniqueVisitor();
     }
-}, 30000); // Check every 30 seconds
+}, 30000);
 
-// ==================== INIT ====================
+// ==================== FAKE ONLINE COUNTER (UI ONLY - NO FIREBASE) ====================
+// Home page ke corner mein yeh dikhta hai. User ko yehi dikhega, real count nahi.
+// 6 AM - 6 PM: 1029 se 1427 ke beech
+// 6 PM - 6 AM: 99 se 150 ke beech
+// Har 4 second mein 2-6 ke random step se upar/neeche hota hai
+function initFakeOnlineCounter() {
+    var counterEl = document.getElementById('yk-online-count');
+    if (!counterEl) return;
+
+    function getRange() {
+        var h = new Date().getHours();
+        var isDay = h >= 6 && h < 18;
+        return isDay ? { min: 1029, max: 1427 } : { min: 99, max: 150 };
+    }
+
+    var range = getRange();
+    var current = Math.floor(range.min + Math.random() * (range.max - range.min));
+    counterEl.textContent = current;
+
+    setInterval(function() {
+        range = getRange();
+        var steps = [2, 3, 4, 5, 6];
+        var step = steps[Math.floor(Math.random() * steps.length)];
+        var direction = Math.random() < 0.5 ? -1 : 1;
+        var next = current + (step * direction);
+        if (next < range.min) next = range.min + step;
+        if (next > range.max) next = range.max - step;
+        current = next;
+        counterEl.textContent = current;
+    }, 4000);
+}
 
 // ==================== AUTO SLIDE ====================
 var autoSlideInterval = null;
-var AUTO_SLIDE_DELAY = 3000; // 3 seconds between slides
+var AUTO_SLIDE_DELAY = 3000;
 var isAutoSliding = true;
 
 function startAutoSlide() {
@@ -2051,274 +1388,123 @@ function startAutoSlide() {
         if (!isAutoSliding) return;
         var grid = document.getElementById('yk-live-grid');
         if (!grid) return;
-
         var maxScroll = grid.scrollWidth - grid.clientWidth;
-        var cardWidth = 252; // matches SLIDE_SCROLL_AMOUNT
-
-        // If near end, scroll back to start
-        if (grid.scrollLeft >= maxScroll - 10) {
-            grid.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-            grid.scrollBy({ left: cardWidth, behavior: 'smooth' });
-        }
-
-        // Update button visibility after scroll
+        var cardWidth = 252;
+        if (grid.scrollLeft >= maxScroll - 10) grid.scrollTo({ left: 0, behavior: 'smooth' });
+        else grid.scrollBy({ left: cardWidth, behavior: 'smooth' });
         setTimeout(updateSlideButtons, 350);
     }, AUTO_SLIDE_DELAY);
 }
 
-function stopAutoSlide() {
-    if (autoSlideInterval) {
-        clearInterval(autoSlideInterval);
-        autoSlideInterval = null;
-    }
-}
-
-function pauseAutoSlide() {
-    isAutoSliding = false;
-}
-
-function resumeAutoSlide() {
-    isAutoSliding = true;
-}
+function stopAutoSlide() { if (autoSlideInterval) { clearInterval(autoSlideInterval); autoSlideInterval = null; } }
+function pauseAutoSlide() { isAutoSliding = false; }
+function resumeAutoSlide() { isAutoSliding = true; }
 
 // ==================== SLIDE BUTTON NAVIGATION ====================
 var SLIDE_SCROLL_AMOUNT = 252;
 
 function initSlideButtons() {
-    var prevBtn = document.getElementById('yk-slide-prev');
-    var nextBtn = document.getElementById('yk-slide-next');
-    var grid = document.getElementById('yk-live-grid');
+    var prevBtn = document.getElementById('yk-slide-prev'), nextBtn = document.getElementById('yk-slide-next'), grid = document.getElementById('yk-live-grid');
     if (!prevBtn || !nextBtn || !grid) return;
-
-    prevBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        pauseAutoSlide();
-        grid.scrollBy({ left: -SLIDE_SCROLL_AMOUNT, behavior: 'smooth' });
-        setTimeout(resumeAutoSlide, 5000); // resume after 5s
-    });
-
-    nextBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        pauseAutoSlide();
-        grid.scrollBy({ left: SLIDE_SCROLL_AMOUNT, behavior: 'smooth' });
-        setTimeout(resumeAutoSlide, 5000); // resume after 5s
-    });
-
-    // Pause auto-slide on hover/touch
+    prevBtn.addEventListener('click', function(e) { e.stopPropagation(); pauseAutoSlide(); grid.scrollBy({ left: -SLIDE_SCROLL_AMOUNT, behavior: 'smooth' }); setTimeout(resumeAutoSlide, 5000); });
+    nextBtn.addEventListener('click', function(e) { e.stopPropagation(); pauseAutoSlide(); grid.scrollBy({ left: SLIDE_SCROLL_AMOUNT, behavior: 'smooth' }); setTimeout(resumeAutoSlide, 5000); });
     grid.addEventListener('mouseenter', pauseAutoSlide);
     grid.addEventListener('mouseleave', resumeAutoSlide);
     grid.addEventListener('touchstart', pauseAutoSlide, { passive: true });
-    grid.addEventListener('touchend', function() {
-        setTimeout(resumeAutoSlide, 3000);
-    }, { passive: true });
-
-    // Show/hide buttons on scroll
-    grid.addEventListener('scroll', function() {
-        updateSlideButtons();
-    });
-
+    grid.addEventListener('touchend', function() { setTimeout(resumeAutoSlide, 3000); }, { passive: true });
+    grid.addEventListener('scroll', function() { updateSlideButtons(); });
     updateSlideButtons();
-    startAutoSlide(); // Start auto-slide
+    startAutoSlide();
 }
 
 function updateSlideButtons() {
-    var grid = document.getElementById('yk-live-grid');
-    var prevBtn = document.getElementById('yk-slide-prev');
-    var nextBtn = document.getElementById('yk-slide-next');
+    var grid = document.getElementById('yk-live-grid'), prevBtn = document.getElementById('yk-slide-prev'), nextBtn = document.getElementById('yk-slide-next');
     if (!grid || !prevBtn || !nextBtn) return;
-
     var maxScroll = grid.scrollWidth - grid.clientWidth;
-
-    // Hide prev if at start
-    if (grid.scrollLeft <= 5) {
-        prevBtn.classList.add('hidden');
-    } else {
-        prevBtn.classList.remove('hidden');
-    }
-
-    // Hide next if at end
-    if (maxScroll <= 5 || grid.scrollLeft >= maxScroll - 5) {
-        nextBtn.classList.add('hidden');
-    } else {
-        nextBtn.classList.remove('hidden');
-    }
+    if (grid.scrollLeft <= 5) prevBtn.classList.add('hidden'); else prevBtn.classList.remove('hidden');
+    if (maxScroll <= 5 || grid.scrollLeft >= maxScroll - 5) nextBtn.classList.add('hidden'); else nextBtn.classList.remove('hidden');
 }
-
 
 // ==================== TELEGRAM POPUP SYSTEM ====================
-// Din mein 2 baar popup ayega:
-// 1. 6:00 AM ke baad (Morning slot)
-// 2. 12:00 PM ke baad (Noon slot)
-// Har slot mein sirf 1 baar popup dikhega (localStorage se track)
-
 var POPUP_SHOWN_KEY = 'yk_popup_shown';
 var POPUP_SLOT_KEY = 'yk_popup_slot';
-
-function getTodayKey() {
-    var now = new Date();
-    var istString = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    var istDate = new Date(istString);
-    var y = istDate.getFullYear();
-    var m = String(istDate.getMonth() + 1).padStart(2, '0');
-    var d = String(istDate.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + d;
-}
 
 function getISTHours() {
     var now = new Date();
     var istString = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    var istDate = new Date(istString);
-    return istDate.getHours();
+    return new Date(istString).getHours();
 }
 
 function getCurrentSlot() {
     var h = getISTHours();
-    if (h >= 6 && h < 12) return 'morning';   // 6 AM - 12 PM
-    if (h >= 12) return 'afternoon';           // 12 PM onwards
-    return 'night'; // 12 AM - 6 AM (no popup)
+    if (h >= 6 && h < 12) return 'morning';
+    if (h >= 12) return 'afternoon';
+    return 'night';
 }
 
 function shouldShowPopup() {
-    var today = getTodayKey();
-    var slot = getCurrentSlot();
-
-    // Night time mein popup nahi
+    var today = getTodayKey(), slot = getCurrentSlot();
     if (slot === 'night') return false;
-
-    var stored = localStorage.getItem(POPUP_SHOWN_KEY);
-    var storedSlot = localStorage.getItem(POPUP_SLOT_KEY);
-
-    // Agar aaj isi slot mein already shown hai, to mat dikhao
-    if (stored === today && storedSlot === slot) {
-        return false;
-    }
-
+    var stored = localStorage.getItem(POPUP_SHOWN_KEY), storedSlot = localStorage.getItem(POPUP_SLOT_KEY);
+    if (stored === today && storedSlot === slot) return false;
     return true;
 }
 
-function markPopupShown() {
-    localStorage.setItem(POPUP_SHOWN_KEY, getTodayKey());
-    localStorage.setItem(POPUP_SLOT_KEY, getCurrentSlot());
-}
+function markPopupShown() { localStorage.setItem(POPUP_SHOWN_KEY, getTodayKey()); localStorage.setItem(POPUP_SLOT_KEY, getCurrentSlot()); }
 
 function showTelegramPopup() {
     var popup = document.getElementById('yk-telegram-popup');
     if (!popup) return;
-
     popup.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-
-    // Join button click
     var joinBtn = document.getElementById('yk-telegram-join');
-    if (joinBtn) {
-        joinBtn.addEventListener('click', function() {
-            markPopupShown();
-            closePopup();
-        });
-    }
-
-    // Skip button click
+    if (joinBtn) joinBtn.addEventListener('click', function() { markPopupShown(); closePopup(); });
     var skipBtn = document.getElementById('yk-telegram-skip');
-    if (skipBtn) {
-        skipBtn.addEventListener('click', function() {
-            markPopupShown();
-            closePopup();
-        });
-    }
-
-    // Close on backdrop click
-    popup.addEventListener('click', function(e) {
-        if (e.target === popup) {
-            markPopupShown();
-            closePopup();
-        }
-    });
-
-    // Escape key close
-    document.addEventListener('keydown', function escHandler(e) {
-        if (e.key === 'Escape') {
-            markPopupShown();
-            closePopup();
-            document.removeEventListener('keydown', escHandler);
-        }
-    });
+    if (skipBtn) skipBtn.addEventListener('click', function() { markPopupShown(); closePopup(); });
+    popup.addEventListener('click', function(e) { if (e.target === popup) { markPopupShown(); closePopup(); } });
+    document.addEventListener('keydown', function escHandler(e) { if (e.key === 'Escape') { markPopupShown(); closePopup(); document.removeEventListener('keydown', escHandler); } });
 }
 
 function closePopup() {
     var popup = document.getElementById('yk-telegram-popup');
-    if (popup) {
-        popup.style.display = 'none';
-        document.body.style.overflow = '';
-    }
+    if (popup) { popup.style.display = 'none'; document.body.style.overflow = ''; }
 }
 
 function initTelegramPopup() {
-    if (shouldShowPopup()) {
-        // Thoda delay taaki page load hone ke baad popup aaye
-        setTimeout(function() {
-            showTelegramPopup();
-        }, 1500);
-    }
+    if (shouldShowPopup()) setTimeout(function() { showTelegramPopup(); }, 1500);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Step 0: Init slide buttons
     initSlideButtons();
-
-    // Step 0.5: Init Telegram Popup
     initTelegramPopup();
-
-    // Step 1: Init Firebase
     initFirebase();
-
-    // Step 2: Init Secondary Firebase (Active Users)
     initSecondaryFirebase();
-
-    // Step 3: Auto-create keys
     autoCreateKeys();
-
-    // Step 4: Start live class listeners
     initLiveClasses();
-
-    // Step 5: Start Active User Tracking
     initActiveUserTracking();
-
-    // Step 6: Listen for admin heartbeat toggle
     initHeartbeatToggle();
-
-    // Step 7: Attach all event listeners
     attachSubjectClicks();
     attachLiveClicks();
     attachTabClicks();
     attachBackButtons();
     attachPlayerControls();
-
-    // Step 8: Init live grid
     initLiveSwipe();
     attachLiveClicks();
-    // Auto slide starts automatically when cards > 4
 
-    // Step 9: Start fake online counter
+    // Corner mein user ko dikhne wala counter — sirf fake, Firebase se koi lena dena nahi
     initFakeOnlineCounter();
 
-    // Step 10: Track daily unique device visits (Firebase 2, resets at midnight IST)
+    // Real unique-device count — sirf background mein chalta hai, admin ke liye
+    // (console mein window.getRealDailyCount() se dekha ja sakta hai), UI par nahi dikhta
     trackDailyUniqueVisitor();
 
-    window.addEventListener('resize', function() {
-        checkLiveOverflow();
-        updateSlideButtons();
-    });
+    window.addEventListener('resize', function() { checkLiveOverflow(); updateSlideButtons(); });
 
     console.log('Yakeen NEET App initialized');
-    console.log('Dynamic live classes: ALL from Firebase');
-    console.log('Firebase Secondary Active User tracking active');
 });
 
 })();
 </script>
-
-
 
 <!-- ===== FIXED TELEGRAM BUTTON (ANIMATED) ===== -->
 <a id="yk-telegram-float" class="yk-telegram-float-btn" href="https://t.me/Cartoon_crazy_toons" target="_blank">
@@ -2340,152 +1526,5 @@ document.addEventListener('DOMContentLoaded', function() {
     <button id="yk-telegram-skip" style="background:transparent;border:none;color:#64748b;font-size:13px;cursor:pointer;padding:8px 16px;">Skip</button>
   </div>
 </div>
-<!-- ════════════════════════════════════════════════════════════
-     TELEGRAM POPUP SYSTEM - STANDALONE
-     Paste this just before </body>
-     ════════════════════════════════════════════════════════════ -->
-
-<!-- Popup HTML -->
-<div id="tg-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;font-family:'Inter',sans-serif;">
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:20px;padding:28px 24px;max-width:340px;width:90%;text-align:center;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
-    <div style="font-size:48px;margin-bottom:12px;">📢</div>
-    <div style="font-size:18px;font-weight:800;color:#f8fafc;margin-bottom:8px;">Join Our Telegram!</div>
-    <div style="font-size:13px;color:#94a3b8;margin-bottom:20px;line-height:1.5;">NEET 2027 ke latest updates, live class links, aur notes sabse pehle Telegram par milte hain.</div>
-    <a id="tg-join-btn" href="https://t.me/Cartoon_crazy_toons" target="_blank" style="display:block;width:100%;padding:14px 0;background:#38bdf8;color:#0f172a;font-size:15px;font-weight:700;border-radius:12px;text-decoration:none;margin-bottom:12px;">Join Telegram</a>
-    <button id="tg-skip-btn" style="background:transparent;border:none;color:#64748b;font-size:13px;cursor:pointer;padding:8px 16px;">Skip</button>
-  </div>
-</div>
-
-<!-- Popup JavaScript -->
-<script>
-(function() {
-  'use strict';
-
-  // ===== CONFIG =====
-  var POPUP_SHOWN_KEY = 'tg_popup_shown';
-  var POPUP_SLOT_KEY = 'tg_popup_slot';
-  var TELEGRAM_LINK = 'https://t.me/Cartoon_crazy_toons';
-
-  // ===== IST TIME HELPERS =====
-  function getISTHours() {
-    var now = new Date();
-    var ist = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    return new Date(ist).getHours();
-  }
-
-  function getTodayKey() {
-    var now = new Date();
-    var ist = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    var d = new Date(ist);
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
-
-  function getCurrentSlot() {
-    var h = getISTHours();
-    if (h >= 6 && h < 12) return 'morning';   // 6 AM - 12 PM
-    if (h >= 12) return 'afternoon';           // 12 PM - 12 AM
-    return 'night';                             // 12 AM - 6 AM (no popup)
-  }
-
-  // ===== CHECK IF POPUP SHOULD SHOW =====
-  function shouldShowPopup() {
-    var slot = getCurrentSlot();
-    if (slot === 'night') return false;
-
-    var today = getTodayKey();
-    var stored = localStorage.getItem(POPUP_SHOWN_KEY);
-    var storedSlot = localStorage.getItem(POPUP_SLOT_KEY);
-
-    // Same day, same slot = already shown
-    if (stored === today && storedSlot === slot) return false;
-    return true;
-  }
-
-  // ===== MARK AS SHOWN =====
-  function markShown() {
-    localStorage.setItem(POPUP_SHOWN_KEY, getTodayKey());
-    localStorage.setItem(POPUP_SLOT_KEY, getCurrentSlot());
-  }
-
-  // ===== SHOW POPUP =====
-  function showPopup() {
-    var popup = document.getElementById('tg-popup');
-    if (!popup) return;
-
-    popup.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    // Join button
-    var joinBtn = document.getElementById('tg-join-btn');
-    if (joinBtn) {
-      joinBtn.onclick = function() {
-        markShown();
-        hidePopup();
-        window.open(TELEGRAM_LINK, '_blank');
-      };
-    }
-
-    // Skip button
-    var skipBtn = document.getElementById('tg-skip-btn');
-    if (skipBtn) {
-      skipBtn.onclick = function() {
-        markShown();
-        hidePopup();
-      };
-    }
-
-    // Backdrop click
-    popup.onclick = function(e) {
-      if (e.target === popup) {
-        markShown();
-        hidePopup();
-      }
-    };
-
-    // Escape key
-    document.addEventListener('keydown', function esc(e) {
-      if (e.key === 'Escape') {
-        markShown();
-        hidePopup();
-        document.removeEventListener('keydown', esc);
-      }
-    });
-  }
-
-  // ===== HIDE POPUP =====
-  function hidePopup() {
-    var popup = document.getElementById('tg-popup');
-    if (popup) {
-      popup.style.display = 'none';
-      document.body.style.overflow = '';
-    }
-  }
-
-  // ===== INIT =====
-  function init() {
-    if (shouldShowPopup()) {
-      // 1.5 second delay after page load
-      setTimeout(showPopup, 1500);
-    } else {
-      console.log('[TelegramPopup] Already shown for this slot');
-    }
-  }
-
-  // Run when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-  // Also expose for manual testing
-  window.testTelegramPopup = function() {
-    localStorage.removeItem(POPUP_SHOWN_KEY);
-    localStorage.removeItem(POPUP_SLOT_KEY);
-    location.reload();
-  };
-
-})();
-</script>
 </body>
 </html>
