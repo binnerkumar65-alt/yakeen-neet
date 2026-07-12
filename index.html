@@ -892,6 +892,30 @@ function organizeData(rawData) {
             }
         }
     }
+
+    // ==== NAYA CONTENT SABSE UPAR (LATEST FIRST) ====
+    // Jo bhi video/notes/dpp sabse aakhri mein add hua ho, wo list mein top par dikhega.
+    // "time" (timestamp) field se sort karte hain — agar wo na ho to _key ke number se.
+    function extractNum(item) {
+        var m = (item._key || '').match(/(\d+)\s*$/);
+        return m ? parseInt(m[1], 10) : 0;
+    }
+    function sortNewestFirst(arr) {
+        arr.sort(function(a, b) {
+            var at = a.time, bt = b.time;
+            if (at && bt) return bt - at; // bada timestamp (naya) pehle
+            return extractNum(b) - extractNum(a); // fallback: bada number (naya) pehle
+        });
+    }
+    for (var subj in organized) {
+        for (var chName in organized[subj].chapters) {
+            var chObj = organized[subj].chapters[chName];
+            sortNewestFirst(chObj.videos);
+            sortNewestFirst(chObj.notes);
+            sortNewestFirst(chObj.dpp);
+        }
+    }
+
     return organized;
 }
 
