@@ -604,9 +604,11 @@ async function loadLibrary(){
     });
 
     library = fresh;
-    // Player screen (video playing in iframe) ko background-refresh se
-    // touch nahi karte, warna iframe reload ho kar video restart ho jaati hai.
-    if (state.screen !== "player") render();
+    // Background poll sirf Home screen ko live update karta hai. Chapters/
+    // Lecture-list/Player screen par navigate karte hi latest data mil
+    // jaata hai (goTo -> render), lekin beech mein baar-baar re-render
+    // nahi hota, warna scroll/position disturb hota hai.
+    if (state.screen === "home") render();
   } catch (err){
     console.error("Library load error:", err);
     if (state.screen === "home"){
@@ -744,21 +746,25 @@ function render(){
   if (state.screen === "home"){
     eyebrow.textContent = "Study Vault";
     brandTitle.textContent = "Home";
+    brandTitle.style.display = "";
     crumbrow.style.display = "none";
     renderHome();
   } else if (state.screen === "chapters"){
     eyebrow.textContent = state.subject;
-    brandTitle.textContent = "Chapters";
+    brandTitle.textContent = "";
+    brandTitle.style.display = "none";
     crumbrow.style.display = "flex";
     renderChapters();
   } else if (state.screen === "chapter"){
     eyebrow.textContent = `${state.subject} · ${state.chapter}`;
-    brandTitle.textContent = state.chapter;
+    brandTitle.textContent = "";
+    brandTitle.style.display = "none";
     crumbrow.style.display = "flex";
     renderChapterDetail();
   } else if (state.screen === "player"){
     eyebrow.textContent = `${state.subject} · ${state.chapter}`;
-    brandTitle.textContent = state.playerTitle || "Video";
+    brandTitle.textContent = "";
+    brandTitle.style.display = "none";
     crumbrow.style.display = "flex";
     renderPlayer();
   }
@@ -812,7 +818,7 @@ function renderLiveRow(){
 
     const videoPreview = cls._thumbLink
       ? `<video class="live-thumb-video" src="${escapeHtml(cls._thumbLink)}" muted playsinline preload="metadata"
-          referrerpolicy="no-referrer" crossorigin="anonymous"
+          referrerpolicy="no-referrer"
           onloadedmetadata="this.currentTime=0.1" onerror="this.remove();"></video>`
       : '';
 
@@ -966,7 +972,7 @@ function renderChapterDetail(){
       : lectures.map(v => `
         <div class="video-list-row" onclick="openPlayer('${v.token}')">
           <img class="video-thumb-img" src="${STREAM_BASE}/thumb/${v.token}" loading="lazy"
-               referrerpolicy="no-referrer" crossorigin="anonymous"
+               referrerpolicy="no-referrer"
                onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2266%22><rect width=%22100%22 height=%2266%22 fill=%22%231A2032%22/></svg>';" />
           <div class="video-row-info">
             <div class="video-row-title">${escapeHtml(v.file_name || 'video')}</div>
